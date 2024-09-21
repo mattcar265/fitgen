@@ -1,45 +1,46 @@
 {
-    "expo": {
-        "name": "fitgen-web",
-        "slug": "fitgen",
-        "version": "1.0.0",
-        "orientation": "portrait",
-        "icon": "./assets/images/icon.png",
-        "scheme": "myapp",
-        "userInterfaceStyle": "automatic",
-        "splash": {
-            "image": "./assets/images/splash.png",
-            "resizeMode": "contain",
-            "backgroundColor": "#ffffff"
-        },
-        "ios": {
-            "supportsTablet": true,
-            "statusBar": {
-                "barStyle": "dark-content",
-                "backgroundColor": "#ff0000"
-            }
-        },
-        "android": {
-            "adaptiveIcon": {
-                "foregroundImage": "./assets/images/adaptive-icon.png",
-                "backgroundColor": "#ffffff"
-            },
-            "package": "com.fitgen.fitgen"
-        },
-        "web": {
-            "bundler": "metro",
-            "output": "static",
-            "favicon": "./assets/images/favicon.png"
-        },
-        "plugins": [],
-        "experiments": {
-            "typedRoutes": true
-        },
-        "extra": {
-            "eas": {
-                "projectId": "026536fc-40d1-4544-81e1-0b457effcba9"
-            }
-        },
-        "owner": "fitgen"
-    }
+  "expo": {
+    "name": "fitgen-web",
+    "slug": "fitgen",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "myapp",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/images/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "statusBar": {
+        "barStyle": "dark-content",
+        "backgroundColor": "#ff0000"
+      },
+      "bundleIdentifier": "com.fitgen.fitgen"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.fitgen.fitgen"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "026536fc-40d1-4544-81e1-0b457effcba9"
+      }
+    },
+    "owner": "fitgen"
+  }
 }

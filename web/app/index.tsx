@@ -1,4 +1,6 @@
+import { StatusBar } from "expo-status-bar";
 import { Text, View } from "react-native";
+import Login from "./screens/Login";
 
 export default function HomeScreen() {
     return (
@@ -9,7 +11,7 @@ export default function HomeScreen() {
                 alignItems: "center",
             }}
         >
-            <Text>Welcome to the App!</Text>
+            <Login />
         </View>
     );
 }
