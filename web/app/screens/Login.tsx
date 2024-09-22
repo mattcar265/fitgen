@@ -1,11 +1,13 @@
 import { Text, View, StyleSheet } from "react-native";
 import colors from "../../constants/colors";
+import LoginForm from "@/components/LoginForm";
 
 export default function Login() {
     return (
         <View style={styles.container}>
             <View style={styles.logo}></View>
             <Text style={styles.title}>FitGen AI</Text>
+            <LoginForm />
         </View>
     );
 }
