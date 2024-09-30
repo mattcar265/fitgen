@@ -18,7 +18,7 @@ public class GPTController {
 
     private static final String API_URL = "https://api.openai.com/v1/chat/completions";
 
-    private String getApiKey() throws GPTKeyException {
+    public String getApiKey() throws GPTKeyException {
         try {
             return new String(Files.readAllBytes(Paths.get("src/main/resources/GPTKey.pem"))).trim();
         } catch (IOException e) {
