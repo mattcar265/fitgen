@@ -48,3 +48,14 @@ Join our community of developers creating universal apps.
 
 -   [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 -   [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+
+# My Notes
+
+## When adding a Route
+
+1. Verify the route in router.d.ts
+2. Make sure the route is relative to the app folder
+
+## When running the app
+
+1. npx expo start --clear

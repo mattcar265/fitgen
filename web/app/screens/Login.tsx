@@ -1,10 +1,16 @@
-import { Text, View, StyleSheet } from "react-native";
+import { TouchableOpacity, Text, View, StyleSheet } from "react-native";
 import colors from "../../constants/colors";
 import LoginForm from "@/components/LoginForm";
+import { Link } from "expo-router";
 
 export default function Login() {
     return (
         <View style={styles.container}>
+            <Link href="/screens/SignUp" asChild>
+                <TouchableOpacity style={styles.signUpContainer}>
+                    <Text style={styles.signUpLink}>Create an Account</Text>
+                </TouchableOpacity>
+            </Link>
             <View style={styles.logo}></View>
             <Text style={styles.title}>FitGen AI</Text>
             <LoginForm />
@@ -30,5 +36,13 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 24,
         fontWeight: "bold",
+    },
+    signUpLink: {
+        textDecorationLine: "underline",
+    },
+    signUpContainer: {
+        position: "absolute",
+        top: 50,
+        right: 30,
     },
 });

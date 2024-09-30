@@ -48,7 +48,7 @@ const LoginForm = () => {
                 onPress={handleSubmit(onSubmit)}
                 style={styles.submitButton}
             >
-                <Text style={styles.submitText}>Create Account</Text>
+                <Text style={styles.submitText}>Login</Text>
             </TouchableOpacity>
         </View>
     );
