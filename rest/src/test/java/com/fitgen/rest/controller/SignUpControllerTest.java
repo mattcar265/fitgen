@@ -1,6 +1,7 @@
 package com.fitgen.rest.controller;
 
 import com.fitgen.rest.exception.SignupDataToMongoException;
+import com.fitgen.rest.exception.UserAlreadyExistsException;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
@@ -18,7 +19,7 @@ public class SignUpControllerTest {
     private SignUpController signUpController;
 
     @Test
-    void signUpSuccessTest() throws SignupDataToMongoException {
+    void signUpSuccessTest() throws SignupDataToMongoException, UserAlreadyExistsException {
         MockitoAnnotations.openMocks(this);
 
         Map<String, Object> request = new HashMap<>();

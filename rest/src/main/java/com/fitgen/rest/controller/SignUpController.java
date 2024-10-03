@@ -1,6 +1,7 @@
 package com.fitgen.rest.controller;
 
 import com.fitgen.rest.exception.SignupDataToMongoException;
+import com.fitgen.rest.exception.UserAlreadyExistsException;
 import com.fitgen.rest.model.User;
 import com.fitgen.rest.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,13 +12,12 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/signup")
-@CrossOrigin(origins = "*")
 public class SignUpController {
 
     @Autowired
     private UserRepository userRepository;
     @PostMapping
-    public ResponseEntity<String> signUp(@RequestBody Map<String, Object> body) throws SignupDataToMongoException {
+    public ResponseEntity<String> signUp(@RequestBody Map<String, Object> body) throws SignupDataToMongoException, UserAlreadyExistsException {
         System.out.println("Received JSON data from frontend:" + body);
 
         if(!validateSignUpForm(body)) {
@@ -52,7 +52,7 @@ public class SignUpController {
         return ResponseEntity.ok("Signup data received and processed successfully");
     }
 
-    public boolean validateSignUpForm(Map<String, Object> body) {
+    public boolean validateSignUpForm(Map<String, Object> body) throws UserAlreadyExistsException {
         String email = (String) body.get("email");
         String password = (String) body.get("password");
         String phone = (String) body.get("phone");
@@ -64,8 +64,16 @@ public class SignUpController {
                 && isValidHeight(height) && isValidWeight(weight) && isValidAge(age);
     }
 
-    public static boolean isValidEmail(String email) {
+    public boolean isValidEmail(String email) throws UserAlreadyExistsException {
+        if(userAlreadyExists(email)) {
+            throw new UserAlreadyExistsException("User with the provided email already exists");
+        }
+
         return email.contains("@") && email.lastIndexOf('.') > email.indexOf('@') + 1;
+    }
+
+    public boolean userAlreadyExists(String email) {
+        return userRepository.findByEmail(email) != null;
     }
 
     public static boolean isValidPassword(String password) {
