@@ -1,6 +1,8 @@
 import colors from "@/constants/colors";
+import env from "@/env/env";
+import { useRouter } from "expo-router";
 import React from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import {
     View,
     Text,
@@ -10,39 +12,78 @@ import {
 } from "react-native";
 
 const LoginForm = () => {
+    const router = useRouter();
+
     const {
-        setValue,
+        control,
         handleSubmit,
         formState: { errors },
-    } = useForm();
+    } = useForm({
+        defaultValues: {
+            email: "",
+            password: "",
+        },
+        mode: "onChange",
+    });
 
-    const onSubmit = (data: any) => {
+    const onSubmit = async (data: any) => {
         console.log(data);
+
+        const backend_url = "http://" + env.BACKEND_IP + ":8080/login";
+        console.log(backend_url);
+
+        const response = await fetch(backend_url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+        });
+
+        if (response.status === 200) {
+            console.log("login successful!");
+            router.push("/screens/SignUp");
+        }
     };
 
     return (
         <View style={styles.formContainer}>
-            <View>
-                <Text>Email</Text>
-                <TextInput
-                    style={styles.formInput}
-                    placeholder="Enter email"
-                    keyboardType="email-address"
-                    onChangeText={(text) => setValue("email", text)}
-                />
-                {errors.email && <Text>Email is required</Text>}
-            </View>
+            <Controller
+                control={control}
+                name="email"
+                rules={{ required: "Email is required" }}
+                render={({ field: { onChange, value } }) => (
+                    <View>
+                        <Text>Email</Text>
+                        <TextInput
+                            style={styles.formInput}
+                            keyboardType="email-address"
+                            onChangeText={onChange}
+                            value={value}
+                        />
+                        {errors.email && <Text>{errors.email.message}</Text>}
+                    </View>
+                )}
+            />
 
-            <View>
-                <Text>Password</Text>
-                <TextInput
-                    style={styles.formInput}
-                    placeholder="Enter password"
-                    secureTextEntry
-                    onChangeText={(text) => setValue("password", text)}
-                />
-                {errors.password && <Text>Password is required</Text>}
-            </View>
+            <Controller
+                control={control}
+                name="password"
+                rules={{ required: "Password is required" }}
+                render={({ field: { onChange, value } }) => (
+                    <View>
+                        <Text>Password</Text>
+                        <TextInput
+                            style={styles.formInput}
+                            onChangeText={onChange}
+                            value={value}
+                        />
+                        {errors.password && (
+                            <Text>{errors.password.message}</Text>
+                        )}
+                    </View>
+                )}
+            />
 
             <TouchableOpacity
                 onPress={handleSubmit(onSubmit)}
