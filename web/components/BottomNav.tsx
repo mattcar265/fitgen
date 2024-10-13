@@ -1,10 +1,16 @@
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import colors from "@/constants/colors";
+import { useRouter } from "expo-router";
 
 const BottomNav = ({ toggleModal }: { toggleModal: () => void }) => {
+    const router = useRouter();
+
     return (
         <View style={styles.bottomNav}>
-            <TouchableOpacity style={styles.bottomNavItem}>
+            <TouchableOpacity
+                style={styles.bottomNavItem}
+                onPress={() => router.push("/screens/Dashboard")}
+            >
                 <Text style={styles.bottomNavItemText}>Dashboard</Text>
             </TouchableOpacity>
             <TouchableOpacity

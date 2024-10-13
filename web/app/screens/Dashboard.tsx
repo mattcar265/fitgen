@@ -27,6 +27,21 @@ export default function Dashboard() {
                 </View>
             </View>
 
+            <View style={styles.dashboardContainer}>
+                <View style={styles.titleContainer}>
+                    <Text style={styles.title}>Dashboard</Text>
+                </View>
+
+                <View>
+                    <View>
+                        <Text style={styles.workoutPlansTitle}>
+                            Workout Plans
+                        </Text>
+                    </View>
+                    <View style={styles.workoutPlansList}></View>
+                </View>
+            </View>
+
             <Modal
                 transparent={true}
                 visible={isModalVisible}
@@ -93,5 +108,20 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "flex-end",
         width: "100%",
+    },
+    titleContainer: {
+        marginVertical: 20,
+        width: "100%",
+    },
+    title: {
+        fontSize: 24,
+        textAlign: "left",
+        alignSelf: "flex-start",
+    },
+    dashboardContainer: {
+        width: "100%",
+    },
+    workoutPlansTitle: {
+        fontSize: 22,
     },
 });
