@@ -7,6 +7,8 @@ import lombok.Setter;
 @Setter
 public class Exercise {
     private String exerciseName;
-    private String duration;
+    private int duration;
     private String instructions;
+    private int sets;
+    private int reps;
 }

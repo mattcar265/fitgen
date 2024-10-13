@@ -2,8 +2,11 @@ package com.fitgen.rest.controller;
 
 import com.fitgen.rest.exception.SignupDataToMongoException;
 import com.fitgen.rest.exception.UserAlreadyExistsException;
+import com.fitgen.rest.repository.UserRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +20,14 @@ public class SignUpControllerTest {
 
     @InjectMocks
     private SignUpController signUpController;
+
+    @Mock
+    private UserRepository userRepository;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
 
     @Test
     void signUpSuccessTest() throws SignupDataToMongoException, UserAlreadyExistsException {

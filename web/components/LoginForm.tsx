@@ -42,7 +42,7 @@ const LoginForm = () => {
 
         if (response.status === 200) {
             console.log("login successful!");
-            router.push("/screens/SignUp");
+            router.push("/screens/Dashboard");
         }
     };
 
