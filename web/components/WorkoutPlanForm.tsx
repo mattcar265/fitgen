@@ -10,7 +10,7 @@ import {
     TouchableOpacity,
 } from "react-native";
 
-const WorkoutPlanForm = () => {
+const WorkoutPlanForm = ({ toggleModal }: { toggleModal: () => void }) => {
     const router = useRouter();
 
     const {
@@ -42,11 +42,16 @@ const WorkoutPlanForm = () => {
         });
 
         if (response.ok) {
-            const responseBody = await response.text();
+            const workoutPlanId = await response.text();
             console.log("plan created");
-            console.log(responseBody);
-            // router.push("/screens/ViewPlan");
+            console.log(workoutPlanId);
+            router.push({
+                pathname: "/screens/ViewPlan/[workoutPlanId]",
+                params: { workoutPlanId: workoutPlanId },
+            });
         }
+
+        toggleModal();
     };
 
     return (

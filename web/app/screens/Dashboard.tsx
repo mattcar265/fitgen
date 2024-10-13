@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Modal } from "react-native";
 import colors from "@/constants/colors";
 import React, { useState } from "react";
 import WorkoutPlanForm from "@/components/WorkoutPlanForm";
+import BottomNav from "@/components/BottomNav";
 
 export default function Dashboard() {
     const [isModalVisible, setIsModalVisible] = useState(false);
@@ -40,27 +41,12 @@ export default function Dashboard() {
                                 </Text>
                             </TouchableOpacity>
                         </View>
-                        <WorkoutPlanForm />
+                        <WorkoutPlanForm toggleModal={toggleModal} />
                     </View>
                 </View>
             </Modal>
 
-            <View style={styles.bottomNav}>
-                <TouchableOpacity style={styles.bottomNavItem}>
-                    <Text style={styles.bottomNavItemText}>Dashboard</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={styles.bottomNavItem}
-                    onPress={toggleModal}
-                >
-                    <Text style={styles.bottomNavItemText}>
-                        Generate Workout
-                    </Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.bottomNavItem}>
-                    <Text style={styles.bottomNavItemText}>Goals</Text>
-                </TouchableOpacity>
-            </View>
+            <BottomNav toggleModal={toggleModal} />
         </View>
     );
 }
@@ -85,24 +71,6 @@ const styles = StyleSheet.create({
         display: "flex",
         justifyContent: "space-between",
         flexDirection: "row",
-    },
-    bottomNav: {
-        width: "100%",
-        height: 60,
-        backgroundColor: colors.purple_primary,
-        position: "absolute",
-        bottom: 0,
-        flexDirection: "row",
-        justifyContent: "space-around",
-        alignItems: "center",
-    },
-    bottomNavItem: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    bottomNavItemText: {
-        color: colors.white_onPrimary,
     },
     modalContainer: {
         flex: 1,
