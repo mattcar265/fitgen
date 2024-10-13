@@ -1,6 +1,13 @@
 package com.fitgen.rest.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fitgen.rest.exception.GPTKeyException;
+import com.fitgen.rest.exception.SignupDataToMongoException;
+import com.fitgen.rest.model.Exercise;
+import com.fitgen.rest.model.WorkoutPlan;
+import com.fitgen.rest.repository.WorkoutPlanRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -11,12 +18,13 @@ import org.springframework.http.HttpHeaders;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class GPTService {
+
+    @Autowired
+    WorkoutPlanRepository workoutPlanRepository;
 
     private static final String API_URL = "https://api.openai.com/v1/chat/completions";
 
@@ -121,11 +129,56 @@ public class GPTService {
 
             System.out.println(response.getBody());
 
-            return response.getBody();
+            return storeWorkoutPlan(response.getBody());
         } catch (GPTKeyException e) {
             throw new GPTKeyException("Error retrieving ChatGPT API key", e);
         } catch (RestClientException e) {
             throw new RestClientException("Error calling ChatGPT API", e);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
+    }
+
+    public String storeWorkoutPlan(String responseBody) throws Exception {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+
+            JsonNode rootNode = objectMapper.readTree(responseBody);
+            String content = rootNode.path("choices").get(0).path("message").path("content").asText();
+            JsonNode contentNode = objectMapper.readTree(content);
+
+            String planName = contentNode.path("planName").asText();
+            String notes = contentNode.path("notes").asText();
+            Date creationDate = new Date();
+            List<Exercise> exercises = getExercises(contentNode);
+
+            WorkoutPlan workoutPlan = new WorkoutPlan();
+            workoutPlan.setPlanName(planName);
+            workoutPlan.setNotes(notes);
+            workoutPlan.setCreationDate(creationDate);
+            workoutPlan.setExercises(exercises);
+
+            System.out.println("Plan Name:" + planName);
+            System.out.println("Exercises:" + exercises.toString());
+
+            return workoutPlanRepository.save(workoutPlan).getPlanId();
+        } catch (Exception e) {
+            throw new Exception("Error storing workout plan", e);
+        }
+    }
+
+    private List<Exercise> getExercises(JsonNode contentNode) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode exercisesNode = contentNode.path("exercises");
+        List<Exercise> exercises = new ArrayList<>();
+
+        if (exercisesNode.isArray()) {
+            for (JsonNode exerciseNode : exercisesNode) {
+                Exercise exercise = objectMapper.convertValue(exerciseNode, Exercise.class);
+                exercises.add(exercise);
+            }
+        }
+
+        return exercises;
     }
 }
