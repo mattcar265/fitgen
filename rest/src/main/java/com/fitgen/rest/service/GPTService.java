@@ -7,6 +7,7 @@ import com.fitgen.rest.exception.SignupDataToMongoException;
 import com.fitgen.rest.model.Exercise;
 import com.fitgen.rest.model.WorkoutPlan;
 import com.fitgen.rest.repository.WorkoutPlanRepository;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
@@ -64,7 +65,7 @@ public class GPTService {
         }
     }
 
-    public String generateWorkoutPlan(String planName, String duration, String description) throws GPTKeyException {
+    public String generateWorkoutPlan(String planName, String duration, String description, String userIdString) throws GPTKeyException {
         try {
             String apiKey = getApiKey();
 
@@ -129,7 +130,7 @@ public class GPTService {
 
             System.out.println(response.getBody());
 
-            return storeWorkoutPlan(response.getBody());
+            return storeWorkoutPlan(response.getBody(), userIdString);
         } catch (GPTKeyException e) {
             throw new GPTKeyException("Error retrieving ChatGPT API key", e);
         } catch (RestClientException e) {
@@ -139,7 +140,7 @@ public class GPTService {
         }
     }
 
-    public String storeWorkoutPlan(String responseBody) throws Exception {
+    public String storeWorkoutPlan(String responseBody, String userIdString) throws Exception {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
 
@@ -157,6 +158,9 @@ public class GPTService {
             workoutPlan.setNotes(notes);
             workoutPlan.setCreationDate(creationDate);
             workoutPlan.setExercises(exercises);
+
+            ObjectId userId = new ObjectId(userIdString);
+            workoutPlan.setUserId(userId);
 
             System.out.println("Plan Name:" + planName);
             System.out.println("Exercises:" + exercises.toString());

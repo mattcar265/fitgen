@@ -38,12 +38,13 @@ public class WorkoutPlanController {
         String planName = (String) body.get("planName");
         String duration = (String) body.get("duration");
         String description = (String) body.get("description");
+        String userIdString = (String) body.get("userId");
 
         if(!validateWorkoutPlanForm(planName, duration, description)) {
             return ResponseEntity.badRequest().body("Workout plan form was invalid");
         }
 
-        String workoutPlanId = gptService.generateWorkoutPlan(planName, duration, description);
+        String workoutPlanId = gptService.generateWorkoutPlan(planName, duration, description, userIdString);
 
         return ResponseEntity.ok(workoutPlanId);
     }

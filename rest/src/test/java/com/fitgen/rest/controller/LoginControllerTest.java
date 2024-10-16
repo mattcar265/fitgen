@@ -42,8 +42,8 @@ public class LoginControllerTest {
         request2.put("email", "bademail@gmail.com");
         request2.put("password", "randompassword");
 
-        ResponseEntity<String> response1 = loginController.login(request1);
-        ResponseEntity<String> response2 = loginController.login(request2);
+        ResponseEntity<Map<String, String>> response1 = loginController.login(request1);
+        ResponseEntity<Map<String, String>> response2 = loginController.login(request2);
 
         assertEquals(HttpStatusCode.valueOf(200), response1.getStatusCode());
         assertEquals(HttpStatusCode.valueOf(400), response2.getStatusCode());

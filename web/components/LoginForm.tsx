@@ -3,6 +3,7 @@ import env from "@/env/env";
 import { useRouter } from "expo-router";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
     View,
     Text,
@@ -40,7 +41,11 @@ const LoginForm = () => {
             body: JSON.stringify(data),
         });
 
-        if (response.status === 200) {
+        if (response.ok) {
+            const { token } = await response.json();
+            await AsyncStorage.setItem("jwtToken", token);
+            console.log("JWT: " + token);
+
             console.log("login successful!");
             router.push("/screens/Dashboard");
         }

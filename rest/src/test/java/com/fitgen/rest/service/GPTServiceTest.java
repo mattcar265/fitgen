@@ -1,4 +1,4 @@
-package com.fitgen.rest.controller;
+package com.fitgen.rest.service;
 
 import com.fitgen.rest.exception.GPTKeyException;
 import com.fitgen.rest.service.GPTService;
@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-public class GPTControllerTest {
+public class GPTServiceTest {
 
     GPTService gptService = new GPTService();
 
