@@ -2,6 +2,7 @@ package com.fitgen.rest.model;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -18,4 +19,6 @@ public class WorkoutPlan {
     private String notes;
     private Date creationDate;
     private List<Exercise> exercises;
+
+    private ObjectId userId;
 }

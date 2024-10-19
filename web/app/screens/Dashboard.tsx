@@ -1,15 +1,76 @@
 import { View, Text, StyleSheet, TouchableOpacity, Modal } from "react-native";
 import colors from "@/constants/colors";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import WorkoutPlanForm from "@/components/WorkoutPlanForm";
 import BottomNav from "@/components/BottomNav";
+import env from "@/env/env";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Dashboard() {
     const [isModalVisible, setIsModalVisible] = useState(false);
+    const [workoutPlans, setWorkoutPlans] = useState<any>([]);
 
     const toggleModal = () => {
         setIsModalVisible(!isModalVisible);
     };
+
+    const fetchWorkoutPlans = async () => {
+        try {
+            const token = await AsyncStorage.getItem("jwtToken");
+            if (!token) {
+                console.log("No JWT token found");
+                return;
+            }
+
+            const response = await fetch(
+                "http://" + env.BACKEND_IP + ":8080/workout-plans",
+                {
+                    method: "GET",
+                    headers: {
+                        Authorization: "Bearer " + token,
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+
+            if (response.ok) {
+                const workoutPlanIds = await response.json();
+                console.log("workout plan IDs: " + workoutPlanIds);
+
+                const workoutPlans = await Promise.all(
+                    workoutPlanIds.map(async (planId: string) => {
+                        const planResponse = await fetch(
+                            "http://" +
+                                env.BACKEND_IP +
+                                ":8080/workout-plans/" +
+                                planId,
+                            {
+                                method: "GET",
+                                headers: {
+                                    Authorization: "Bearer " + token,
+                                    "Content-Type": "application/json",
+                                },
+                            }
+                        );
+
+                        if (planResponse.ok) {
+                            return await planResponse.json();
+                        } else {
+                            console.error("Failed to fetch planId: " + planId);
+                        }
+                    })
+                );
+
+                setWorkoutPlans(workoutPlans.filter((plan) => plan !== null));
+            }
+        } catch {
+            console.error("Error retrieving workout plans");
+        }
+    };
+
+    useEffect(() => {
+        fetchWorkoutPlans();
+    }, []);
 
     return (
         <View style={styles.container}>
@@ -24,6 +85,42 @@ export default function Dashboard() {
                     <TouchableOpacity>
                         <Text>Settings</Text>
                     </TouchableOpacity>
+                </View>
+            </View>
+
+            <View style={styles.dashboardContainer}>
+                <View style={styles.titleContainer}>
+                    <Text style={styles.title}>Dashboard</Text>
+                </View>
+
+                <View>
+                    <View>
+                        <Text style={styles.workoutPlansTitle}>
+                            Workout Plans
+                        </Text>
+                    </View>
+                    <View style={styles.workoutPlansList}>
+                        {workoutPlans.length > 0 ? (
+                            workoutPlans.map((plan: any) => (
+                                <View
+                                    key={plan.planId}
+                                    style={styles.workoutPlan}
+                                >
+                                    <Text style={styles.workoutPlanText}>
+                                        {plan.planName}
+                                    </Text>
+                                    <Text style={styles.workoutPlanDateText}>
+                                        Created{" "}
+                                        {new Date(
+                                            plan.creationDate
+                                        ).toLocaleDateString()}
+                                    </Text>
+                                </View>
+                            ))
+                        ) : (
+                            <Text></Text>
+                        )}
+                    </View>
                 </View>
             </View>
 
@@ -93,5 +190,41 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "flex-end",
         width: "100%",
+    },
+    titleContainer: {
+        marginVertical: 20,
+        width: "100%",
+    },
+    title: {
+        fontSize: 24,
+        textAlign: "left",
+        alignSelf: "flex-start",
+    },
+    dashboardContainer: {
+        width: "100%",
+    },
+    workoutPlansTitle: {
+        fontSize: 22,
+        marginBottom: 20,
+    },
+    workoutPlanText: {
+        fontSize: 16,
+        fontWeight: 600,
+    },
+    workoutPlanDateText: {
+        fontSize: 16,
+    },
+    workoutPlansList: {
+        display: "flex",
+        gap: 10,
+    },
+    workoutPlan: {
+        padding: 10,
+        display: "flex",
+        gap: 5,
+        backgroundColor: colors.white_surface,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: colors.grey_divider,
     },
 });

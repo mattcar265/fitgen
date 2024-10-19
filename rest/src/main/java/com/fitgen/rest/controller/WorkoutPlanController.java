@@ -4,10 +4,13 @@ import com.fitgen.rest.exception.GPTKeyException;
 import com.fitgen.rest.model.WorkoutPlan;
 import com.fitgen.rest.repository.WorkoutPlanRepository;
 import com.fitgen.rest.service.GPTService;
+import com.fitgen.rest.util.JwtUtil;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -24,6 +27,24 @@ public class WorkoutPlanController {
     @Autowired
     private GPTService gptService;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    @GetMapping
+    public ResponseEntity<List<String>> getWorkoutPlansForUser(@RequestHeader("Authorization") String authHeader) {
+        String jwt = authHeader.substring(7);
+        String userIdString = jwtUtil.extractUserId(jwt);
+        ObjectId userId = new ObjectId(userIdString);
+
+        List<WorkoutPlan> workoutPlans = workoutPlanRepository.findByUserId(userId);
+
+        List<String> workoutPlanIds = workoutPlans.stream()
+                .map(WorkoutPlan::getPlanId)
+                .toList();
+
+        return ResponseEntity.ok(workoutPlanIds);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<WorkoutPlan> getWorkoutPlanById(@PathVariable String id) {
         Optional<WorkoutPlan> workoutPlan = workoutPlanRepository.findById(id);
@@ -32,8 +53,11 @@ public class WorkoutPlanController {
     }
 
     @PostMapping("/generate-plan")
-    public ResponseEntity<String> generatePlan(@RequestBody Map<String, Object> body) throws GPTKeyException {
+    public ResponseEntity<String> generatePlan(@RequestHeader("Authorization") String authHeader, @RequestBody Map<String, Object> body) throws GPTKeyException {
         System.out.println("Received workout plan form from frontend:" + body);
+
+        String jwt = authHeader.substring(7);
+        String userIdString = jwtUtil.extractUserId(jwt);
 
         String planName = (String) body.get("planName");
         String duration = (String) body.get("duration");
@@ -43,7 +67,7 @@ public class WorkoutPlanController {
             return ResponseEntity.badRequest().body("Workout plan form was invalid");
         }
 
-        String workoutPlanId = gptService.generateWorkoutPlan(planName, duration, description);
+        String workoutPlanId = gptService.generateWorkoutPlan(planName, duration, description, userIdString);
 
         return ResponseEntity.ok(workoutPlanId);
     }

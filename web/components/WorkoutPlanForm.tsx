@@ -1,5 +1,6 @@
 import colors from "@/constants/colors";
 import env from "@/env/env";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
 import {
@@ -33,9 +34,12 @@ const WorkoutPlanForm = ({ toggleModal }: { toggleModal: () => void }) => {
             "http://" + env.BACKEND_IP + ":8080/workout-plans/generate-plan";
         console.log(backend_url);
 
+        const token = await AsyncStorage.getItem("jwtToken");
+
         const response = await fetch(backend_url, {
             method: "POST",
             headers: {
+                Authorization: "Bearer " + token,
                 "Content-Type": "application/json",
             },
             body: JSON.stringify(data),
