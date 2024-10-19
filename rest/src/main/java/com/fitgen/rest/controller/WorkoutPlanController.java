@@ -72,7 +72,7 @@ public class WorkoutPlanController {
         return ResponseEntity.ok(workoutPlanId);
     }
 
-    private boolean validateWorkoutPlanForm(String planName, String duration, String description) {
+    boolean validateWorkoutPlanForm(String planName, String duration, String description) {
         int nullCount = 0;
 
         if(Objects.equals(planName, "")) nullCount++;
