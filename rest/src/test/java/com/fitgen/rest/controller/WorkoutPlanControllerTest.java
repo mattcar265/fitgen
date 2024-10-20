@@ -60,4 +60,16 @@ public class WorkoutPlanControllerTest {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
+
+    @Test
+    void getWorkoutPlanByIdNotFoundTest() {
+        WorkoutPlan mockWorkoutPlan = new WorkoutPlan();
+        mockWorkoutPlan.setPlanId("12345");
+        mockWorkoutPlan.setPlanName("Test Plan");
+
+        when(workoutPlanRepository.findById(mockWorkoutPlan.getPlanId())).thenReturn(Optional.empty());
+        ResponseEntity<WorkoutPlan> response = workoutPlanController.getWorkoutPlanById(mockWorkoutPlan.getPlanId());
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
 }
