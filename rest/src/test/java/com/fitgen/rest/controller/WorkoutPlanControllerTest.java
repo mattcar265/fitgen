@@ -1,15 +1,23 @@
 package com.fitgen.rest.controller;
 
+import com.fitgen.rest.model.WorkoutPlan;
 import com.fitgen.rest.model.WorkoutPlanForm;
+import com.fitgen.rest.repository.WorkoutPlanRepository;
+import com.fitgen.rest.service.GPTService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -17,6 +25,9 @@ public class WorkoutPlanControllerTest {
 
     @InjectMocks
     private WorkoutPlanController workoutPlanController;
+
+    @Mock
+    WorkoutPlanRepository workoutPlanRepository;
 
     @BeforeEach
     void setUp() {
@@ -36,5 +47,17 @@ public class WorkoutPlanControllerTest {
         assertTrue(result1);
         assertTrue(result2);
         assertFalse(result3);
+    }
+
+    @Test
+    void getWorkoutPlanByIdTest() {
+        WorkoutPlan mockWorkoutPlan = new WorkoutPlan();
+        mockWorkoutPlan.setPlanId("12345");
+        mockWorkoutPlan.setPlanName("Test Plan");
+
+        when(workoutPlanRepository.findById(mockWorkoutPlan.getPlanId())).thenReturn(Optional.of(mockWorkoutPlan));
+        ResponseEntity<WorkoutPlan> response = workoutPlanController.getWorkoutPlanById(mockWorkoutPlan.getPlanId());
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 }
