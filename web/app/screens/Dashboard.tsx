@@ -8,10 +8,42 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Dashboard() {
     const [isModalVisible, setIsModalVisible] = useState(false);
-    const [workoutPlans, setWorkoutPlans] = useState<any>([]);
+    const [workoutPlans, setWorkoutPlans] = useState<any>({});
 
     const toggleModal = () => {
         setIsModalVisible(!isModalVisible);
+    };
+
+    const deleteWorkoutPlan = async (planId: string) => {
+        try {
+            const token = await AsyncStorage.getItem("jwtToken");
+            if (!token) {
+                console.log("No JWT token found");
+                return;
+            }
+
+            const response = await fetch(
+                `http://${env.BACKEND_IP}:8080/workout-plans/${planId}`,
+                {
+                    method: "DELETE",
+                    headers: {
+                        Authorization: "Bearer " + token,
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+
+            if (response.ok) {
+                console.log(`Workout plan ${planId} deleted`);
+                const updatedPlans = { ...workoutPlans };
+                delete updatedPlans[planId];
+                setWorkoutPlans(updatedPlans);
+            } else {
+                console.error("Failed to delete workout plan");
+            }
+        } catch (error) {
+            console.log("Error deleting workout plan", error);
+        }
     };
 
     const fetchWorkoutPlans = async () => {
@@ -35,6 +67,8 @@ export default function Dashboard() {
 
             if (response.ok) {
                 const workoutPlanIds = await response.json();
+                const plansMap: any = {};
+
                 console.log("workout plan IDs: " + workoutPlanIds);
 
                 const workoutPlans = await Promise.all(
@@ -54,14 +88,16 @@ export default function Dashboard() {
                         );
 
                         if (planResponse.ok) {
-                            return await planResponse.json();
+                            const planData = await planResponse.json();
+                            plansMap[planId] = planData;
                         } else {
                             console.error("Failed to fetch planId: " + planId);
                         }
                     })
                 );
+                console.log(plansMap);
 
-                setWorkoutPlans(workoutPlans.filter((plan) => plan !== null));
+                setWorkoutPlans(plansMap);
             }
         } catch {
             console.error("Error retrieving workout plans");
@@ -100,23 +136,40 @@ export default function Dashboard() {
                         </Text>
                     </View>
                     <View style={styles.workoutPlansList}>
-                        {workoutPlans.length > 0 ? (
-                            workoutPlans.map((plan: any) => (
-                                <View
-                                    key={plan.planId}
-                                    style={styles.workoutPlan}
-                                >
-                                    <Text style={styles.workoutPlanText}>
-                                        {plan.planName}
-                                    </Text>
-                                    <Text style={styles.workoutPlanDateText}>
-                                        Created{" "}
-                                        {new Date(
-                                            plan.creationDate
-                                        ).toLocaleDateString()}
-                                    </Text>
-                                </View>
-                            ))
+                        {Object.keys(workoutPlans).length > 0 ? (
+                            Object.entries(workoutPlans).map(
+                                ([planId, plan]: any) => (
+                                    <View
+                                        key={plan.planId}
+                                        style={styles.workoutPlan}
+                                    >
+                                        <View>
+                                            <Text
+                                                style={styles.workoutPlanText}
+                                            >
+                                                {plan.planName}
+                                            </Text>
+                                            <Text
+                                                style={
+                                                    styles.workoutPlanDateText
+                                                }
+                                            >
+                                                Created{" "}
+                                                {new Date(
+                                                    plan.creationDate
+                                                ).toLocaleDateString()}
+                                            </Text>
+                                        </View>
+                                        <TouchableOpacity
+                                            onPress={() =>
+                                                deleteWorkoutPlan(planId)
+                                            }
+                                        >
+                                            <Text>Delete</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                )
+                            )
                         ) : (
                             <Text></Text>
                         )}
@@ -221,6 +274,9 @@ const styles = StyleSheet.create({
     workoutPlan: {
         padding: 10,
         display: "flex",
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
         gap: 5,
         backgroundColor: colors.white_surface,
         borderRadius: 12,

@@ -7,6 +7,7 @@ import com.fitgen.rest.service.GPTService;
 import com.fitgen.rest.util.JwtUtil;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -50,6 +51,20 @@ public class WorkoutPlanController {
         Optional<WorkoutPlan> workoutPlan = workoutPlanRepository.findById(id);
 
         return workoutPlan.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<WorkoutPlan> deleteWorkoutPlanById(@PathVariable String id) {
+        try {
+            if (workoutPlanRepository.existsById(id)) {
+                workoutPlanRepository.deleteById(id);
+                return ResponseEntity.ok().build();
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @PostMapping("/generate-plan")
