@@ -7,6 +7,7 @@ import com.fitgen.rest.service.GPTService;
 import com.fitgen.rest.util.JwtUtil;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -52,6 +53,20 @@ public class WorkoutPlanController {
         return workoutPlan.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<WorkoutPlan> deleteWorkoutPlanById(@PathVariable String id) {
+        try {
+            if (workoutPlanRepository.existsById(id)) {
+                workoutPlanRepository.deleteById(id);
+                return ResponseEntity.ok().build();
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     @PostMapping("/generate-plan")
     public ResponseEntity<String> generatePlan(@RequestHeader("Authorization") String authHeader, @RequestBody Map<String, Object> body) throws GPTKeyException {
         System.out.println("Received workout plan form from frontend:" + body);
@@ -72,7 +87,7 @@ public class WorkoutPlanController {
         return ResponseEntity.ok(workoutPlanId);
     }
 
-    private boolean validateWorkoutPlanForm(String planName, String duration, String description) {
+    boolean validateWorkoutPlanForm(String planName, String duration, String description) {
         int nullCount = 0;
 
         if(Objects.equals(planName, "")) nullCount++;
