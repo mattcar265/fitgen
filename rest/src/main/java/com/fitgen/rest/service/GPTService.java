@@ -5,7 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fitgen.rest.exception.GPTKeyException;
 import com.fitgen.rest.exception.SignupDataToMongoException;
 import com.fitgen.rest.model.Exercise;
+import com.fitgen.rest.model.User;
 import com.fitgen.rest.model.WorkoutPlan;
+import com.fitgen.rest.repository.UserRepository;
 import com.fitgen.rest.repository.WorkoutPlanRepository;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +18,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.HttpHeaders;
 
+import javax.swing.text.html.Option;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -26,6 +29,9 @@ public class GPTService {
 
     @Autowired
     WorkoutPlanRepository workoutPlanRepository;
+
+    @Autowired
+    UserRepository userRepository;
 
     private static final String API_URL = "https://api.openai.com/v1/chat/completions";
 
@@ -75,8 +81,11 @@ public class GPTService {
             headers.set("Authorization", "Bearer " + apiKey);
             headers.set("Content-Type", "application/json");
 
+            String userDetailsForPrompt = getUserDetails(userIdString);
+
             String gptPrompt = String.format(
                     """
+                    For the user details: %s,
                     Generate a workout plan in JSON format based on the following parameters:
                     1. planName (optional): if provided, use it as the name of the workout plan. if not, generate one contextually.
                     2. duration (optional): if provided, use it as the total length of the work. If not, generate one in minutes.
@@ -117,7 +126,9 @@ public class GPTService {
                         }
                       ]
                     }
-                    """, planName, duration, description);
+                    """, userDetailsForPrompt, planName, duration, description);
+
+            System.out.println(gptPrompt);
 
             Map<String, Object> requestBody = new HashMap<>();
             requestBody.put("model", "gpt-3.5-turbo");
@@ -184,5 +195,24 @@ public class GPTService {
         }
 
         return exercises;
+    }
+
+    private String getUserDetails(String userIdString) throws Exception {
+        Optional<User> user = userRepository.findById(userIdString);
+
+        if(user.isPresent()) {
+            int userAge = user.get().getAge();
+            int userHeight = user.get().getHeight();
+            int userWeight = user.get().getWeight();
+            String gender = user.get().getGender();
+            String userPrimaryGoal = user.get().getPrimaryGoal();
+            String userSecondaryGoal = user.get().getSecondaryGoal();
+
+            return String.format(
+                    "age: %s, height: %s, weight: %s, gender: %s, primary goal: %s, secondary goal: %s",
+                    userAge, userHeight, userWeight, gender, userPrimaryGoal, userSecondaryGoal);
+        } else {
+            throw new Exception("Cannot find user by ID: " + userIdString);
+        }
     }
 }
