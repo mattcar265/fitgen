@@ -46,12 +46,12 @@ const ViewPlan = ({ toggleModal }: { toggleModal: () => void }) => {
         }));
     };
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (workoutPlanId: any) => {
         try {
             const token = await AsyncStorage.getItem("jwtToken");
 
             const response = await fetch(
-                `http://${env.BACKEND_IP}:8080/workout-plans/{workoutPlanId}`,
+                `http://${env.BACKEND_IP}:8080/workout-plans/${workoutPlanId}`,
                 {
                     method: "PUT",
                     headers: {
