@@ -197,7 +197,7 @@ public class GPTService {
         return exercises;
     }
 
-    private String getUserDetails(String userIdString) throws Exception {
+    String getUserDetails(String userIdString) throws Exception {
         Optional<User> user = userRepository.findById(userIdString);
 
         if(user.isPresent()) {
