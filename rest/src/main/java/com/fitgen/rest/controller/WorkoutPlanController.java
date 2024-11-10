@@ -1,6 +1,10 @@
 package com.fitgen.rest.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fitgen.rest.exception.GPTKeyException;
+import com.fitgen.rest.model.Exercise;
 import com.fitgen.rest.model.WorkoutPlan;
 import com.fitgen.rest.repository.WorkoutPlanRepository;
 import com.fitgen.rest.service.GPTService;
@@ -11,10 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 // https://www.baeldung.com/gson-string-to-jsonobject#:~:text=Learn%20a%20couple%20of%20methods%20for
 
@@ -44,6 +45,58 @@ public class WorkoutPlanController {
                 .toList();
 
         return ResponseEntity.ok(workoutPlanIds);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<String> updateWorkoutPlanById(@RequestHeader("Authorization") String authHeader,
+                                                        @PathVariable String id,
+                                                        @RequestBody String workoutPlan) throws Exception {
+        try {
+            String jwt = authHeader.substring(7);
+            String userIdString = jwtUtil.extractUserId(jwt);
+            ObjectId userId = new ObjectId(userIdString);
+
+            Optional<WorkoutPlan> existingPlan = workoutPlanRepository.findById(id);
+            System.out.println(existingPlan);
+
+            if (existingPlan.isEmpty()) {
+                return ResponseEntity.status(404).body("Workout plan not found");
+            }
+
+            System.out.println(workoutPlan);
+
+            WorkoutPlan updatedWorkoutPlan = existingPlan.get();
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            Date creationDate = new Date();
+
+            JsonNode rootNode = objectMapper.readTree(workoutPlan);
+            System.out.println(rootNode.get("planId"));
+            updatedWorkoutPlan.setPlanName(rootNode.get("planName").asText());
+            updatedWorkoutPlan.setNotes(rootNode.get("notes").asText());
+            updatedWorkoutPlan.setCreationDate(creationDate);
+            updatedWorkoutPlan.setExercises(getExercises(rootNode));
+            updatedWorkoutPlan.setUserId(userId);
+            workoutPlanRepository.save(updatedWorkoutPlan);
+        } catch (Exception e) {
+            throw new Exception("Error updating workout plan", e);
+        }
+        return ResponseEntity.ok("finished updating");
+    }
+
+    private List<Exercise> getExercises(JsonNode contentNode) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode exercisesNode = contentNode.path("exercises");
+        List<Exercise> exercises = new ArrayList<>();
+
+        if (exercisesNode.isArray()) {
+            for (JsonNode exerciseNode : exercisesNode) {
+                Exercise exercise = objectMapper.convertValue(exerciseNode, Exercise.class);
+                exercises.add(exercise);
+            }
+        }
+
+        return exercises;
     }
 
     @GetMapping("/{id}")

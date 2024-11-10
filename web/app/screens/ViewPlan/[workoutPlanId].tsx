@@ -142,7 +142,7 @@ const ViewPlan = ({ toggleModal }: { toggleModal: () => void }) => {
                 <View>
                     <TouchableOpacity
                         style={styles.saveButton}
-                        onPress={handleSubmit}
+                        onPress={() => handleSubmit(workoutPlanId)}
                     >
                         <Text style={styles.saveText}>Save Changes</Text>
                     </TouchableOpacity>
