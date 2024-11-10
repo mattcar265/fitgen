@@ -19,7 +19,10 @@ const BottomNav = ({ toggleModal }: { toggleModal: () => void }) => {
             >
                 <Text style={styles.bottomNavItemText}>Generate Workout</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.bottomNavItem}>
+            <TouchableOpacity
+                style={styles.bottomNavItem}
+                onPress={() => router.push("/screens/Goals")}
+            >
                 <Text style={styles.bottomNavItemText}>Goals</Text>
             </TouchableOpacity>
         </View>
