@@ -28,6 +28,24 @@ const ViewPlan = ({ toggleModal }: { toggleModal: () => void }) => {
         }));
     };
 
+    const handleSetsChange = (index: number, newName: string) => {
+        setWorkoutPlan((prevPlan: any) => ({
+            ...prevPlan,
+            exercises: prevPlan.exercises.map((exercise: any, i: number) =>
+                i === index ? { ...exercise, sets: newName } : exercise
+            ),
+        }));
+    };
+
+    const handleRepsChange = (index: number, newName: string) => {
+        setWorkoutPlan((prevPlan: any) => ({
+            ...prevPlan,
+            exercises: prevPlan.exercises.map((exercise: any, i: number) =>
+                i === index ? { ...exercise, reps: newName } : exercise
+            ),
+        }));
+    };
+
     const handleSubmit = async () => {
         try {
             const token = await AsyncStorage.getItem("jwtToken");
@@ -122,7 +140,14 @@ const ViewPlan = ({ toggleModal }: { toggleModal: () => void }) => {
                 </View>
 
                 <View>
-                    <View>
+                    <TouchableOpacity
+                        style={styles.saveButton}
+                        onPress={handleSubmit}
+                    >
+                        <Text style={styles.saveText}>Save Changes</Text>
+                    </TouchableOpacity>
+
+                    <View style={styles.workoutsContainer}>
                         {workoutPlan.exercises.map(
                             (exercise: any, index: any) => (
                                 <View
@@ -140,7 +165,9 @@ const ViewPlan = ({ toggleModal }: { toggleModal: () => void }) => {
                                     <View style={styles.workoutItemRight}>
                                         <View style={styles.middle}>
                                             <TextInput
-                                                value={exercise.exerciseName}
+                                                value={
+                                                    exercise.exerciseName || ""
+                                                }
                                                 onChangeText={(text) => {
                                                     handleExerciseNameChange(
                                                         index,
@@ -148,23 +175,67 @@ const ViewPlan = ({ toggleModal }: { toggleModal: () => void }) => {
                                                     );
                                                 }}
                                             />
-                                            <Text style={styles.instructions}>
-                                                {exercise.sets}x{exercise.reps},{" "}
-                                                {exercise.instructions}
-                                            </Text>
+                                            <View>
+                                                <View style={styles.row}>
+                                                    <Text>Sets: </Text>
+                                                    <TextInput
+                                                        style={
+                                                            styles.setRepCount
+                                                        }
+                                                        value={
+                                                            exercise.sets || ""
+                                                        }
+                                                        onChangeText={(
+                                                            text
+                                                        ) => {
+                                                            handleSetsChange(
+                                                                index,
+                                                                text
+                                                            );
+                                                        }}
+                                                    />
+                                                </View>
+
+                                                <View style={styles.row}>
+                                                    <Text>Reps: </Text>
+                                                    <TextInput
+                                                        style={
+                                                            styles.setRepCount
+                                                        }
+                                                        value={
+                                                            exercise.reps || ""
+                                                        }
+                                                        onChangeText={(
+                                                            text
+                                                        ) => {
+                                                            handleRepsChange(
+                                                                index,
+                                                                text
+                                                            );
+                                                        }}
+                                                    />
+                                                </View>
+                                                <TextInput
+                                                    style={styles.instructions}
+                                                    value={
+                                                        exercise.instructions ||
+                                                        ""
+                                                    }
+                                                    multiline={true}
+                                                    onChangeText={(text) => {
+                                                        handleExerciseNameChange(
+                                                            index,
+                                                            text
+                                                        );
+                                                    }}
+                                                />
+                                            </View>
                                         </View>
                                     </View>
                                 </View>
                             )
                         )}
                     </View>
-
-                    <TouchableOpacity
-                        style={styles.saveButton}
-                        onPress={handleSubmit}
-                    >
-                        <Text style={styles.saveText}>Save Changes</Text>
-                    </TouchableOpacity>
                 </View>
             </View>
 
@@ -174,6 +245,26 @@ const ViewPlan = ({ toggleModal }: { toggleModal: () => void }) => {
 };
 
 const styles = StyleSheet.create({
+    workoutsContainer: {
+        overflow: "scroll",
+    },
+    instructions: {
+        width: "80%",
+    },
+    row: {
+        flexDirection: "row",
+    },
+    repCount: {
+        marginLeft: 6,
+        width: 45,
+        alignItems: "flex-end",
+        justifyContent: "flex-end",
+    },
+    setRepCount: {
+        width: 45,
+        alignItems: "flex-end",
+        justifyContent: "flex-end",
+    },
     saveButton: {
         backgroundColor: colors.orange_accent,
         padding: 10,
@@ -187,7 +278,6 @@ const styles = StyleSheet.create({
     middle: {
         width: "90%",
     },
-    instructions: {},
     workoutItemRight: {
         justifyContent: "space-between",
         width: "80%",
