@@ -20,6 +20,18 @@ public class UserController {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @DeleteMapping
+    public ResponseEntity<String> deleteAccount(@RequestHeader("Authorization") String authHeader) throws Exception {
+        String jwt = authHeader.substring(7);
+        String userIdString = jwtUtil.extractUserId(jwt);
+
+        User user = userRepository.findById(userIdString).orElseThrow(() -> new Exception("User not found"));
+
+        userRepository.delete(user);
+
+        return ResponseEntity.ok("User deleted");
+    }
+
     @PostMapping("/fitness-goals")
     public ResponseEntity<String> updateFitnessGoals(@RequestHeader("Authorization") String authHeader, @RequestBody Map<String, Object> body) throws Exception {
         String jwt = authHeader.substring(7);
