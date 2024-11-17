@@ -97,6 +97,29 @@ export default function Account() {
         }
     };
 
+    const deleteAccount = async () => {
+        const token = await AsyncStorage.getItem("jwtToken");
+        if (!token) {
+            console.log("No JWT token found");
+            return;
+        }
+
+        const backend_url = "http://" + env.BACKEND_IP + ":8080/user";
+
+        const response = await fetch(backend_url, {
+            method: "DELETE",
+            headers: {
+                Authorization: "Bearer " + token,
+                "Content-Type": "application/json",
+            },
+        });
+
+        if (response.ok) {
+            console.log("Deleted account successfully");
+            router.push("/screens/Login");
+        }
+    };
+
     return (
         <View style={styles.container}>
             <View style={styles.topNav}>
@@ -235,6 +258,13 @@ export default function Account() {
                     >
                         <Text style={styles.submitText}>Update</Text>
                     </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={styles.deleteButton}
+                        onPress={deleteAccount}
+                    >
+                        <Text style={styles.submitText}>Delete Account</Text>
+                    </TouchableOpacity>
                 </View>
             </ScrollView>
 
@@ -264,7 +294,7 @@ export default function Account() {
 
 const styles = StyleSheet.create({
     scrollContainer: {
-        paddingBottom: 40,
+        paddingBottom: 70,
         width: "100%",
     },
     container: {
@@ -320,12 +350,19 @@ const styles = StyleSheet.create({
     dropDownValue: {
         height: 25,
     },
+    deleteButton: {
+        backgroundColor: colors.red_error,
+        padding: 10,
+        borderRadius: 8,
+        alignItems: "center",
+        marginVertical: 10,
+    },
     submitButton: {
         backgroundColor: colors.orange_accent,
         padding: 10,
         borderRadius: 8,
         alignItems: "center",
-        marginVertical: 40,
+        marginVertical: 20,
     },
     fieldTitle: {
         fontWeight: 600,
