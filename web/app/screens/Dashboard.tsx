@@ -126,7 +126,9 @@ export default function Dashboard() {
     return (
         <View style={styles.container}>
             <View style={styles.topNav}>
-                <TouchableOpacity>
+                <TouchableOpacity
+                    onPress={() => router.push("/screens/Account")}
+                >
                     <Text>Account</Text>
                 </TouchableOpacity>
                 <View>
