@@ -1,6 +1,7 @@
 import BottomNav from "@/components/BottomNav";
 import colors from "@/constants/colors";
 import env from "@/env/env";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import {
@@ -9,6 +10,7 @@ import {
     TouchableOpacity,
     View,
     StyleSheet,
+    TextInput,
 } from "react-native";
 
 const ViewPlan = ({ toggleModal }: { toggleModal: () => void }) => {
@@ -17,8 +19,62 @@ const ViewPlan = ({ toggleModal }: { toggleModal: () => void }) => {
     const [duration, setDuration] = useState<any>(0);
     const [loading, setLoading] = useState(true);
 
+    const handleExerciseNameChange = (index: number, newName: string) => {
+        setWorkoutPlan((prevPlan: any) => ({
+            ...prevPlan,
+            exercises: prevPlan.exercises.map((exercise: any, i: number) =>
+                i === index ? { ...exercise, exerciseName: newName } : exercise
+            ),
+        }));
+    };
+
+    const handleSetsChange = (index: number, newName: string) => {
+        setWorkoutPlan((prevPlan: any) => ({
+            ...prevPlan,
+            exercises: prevPlan.exercises.map((exercise: any, i: number) =>
+                i === index ? { ...exercise, sets: newName } : exercise
+            ),
+        }));
+    };
+
+    const handleRepsChange = (index: number, newName: string) => {
+        setWorkoutPlan((prevPlan: any) => ({
+            ...prevPlan,
+            exercises: prevPlan.exercises.map((exercise: any, i: number) =>
+                i === index ? { ...exercise, reps: newName } : exercise
+            ),
+        }));
+    };
+
+    const handleSubmit = async (workoutPlanId: any) => {
+        try {
+            const token = await AsyncStorage.getItem("jwtToken");
+
+            const response = await fetch(
+                `http://${env.BACKEND_IP}:8080/workout-plans/${workoutPlanId}`,
+                {
+                    method: "PUT",
+                    headers: {
+                        Authorization: "Bearer " + token,
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(workoutPlan),
+                }
+            );
+
+            if (response.ok) {
+                console.log("Workout plan updated");
+            } else {
+                console.log("Failed to update workout plan");
+            }
+        } catch (error) {
+            console.error("Error submitting updated workout plan: ", error);
+        }
+    };
+
     useEffect(() => {
         const fetchWorkoutPlan = async () => {
+            console.log("from view page:" + workoutPlanId);
             try {
                 const response = await fetch(
                     "http://" +
@@ -84,7 +140,14 @@ const ViewPlan = ({ toggleModal }: { toggleModal: () => void }) => {
                 </View>
 
                 <View>
-                    <View>
+                    <TouchableOpacity
+                        style={styles.saveButton}
+                        onPress={() => handleSubmit(workoutPlanId)}
+                    >
+                        <Text style={styles.saveText}>Save Changes</Text>
+                    </TouchableOpacity>
+
+                    <View style={styles.workoutsContainer}>
                         {workoutPlan.exercises.map(
                             (exercise: any, index: any) => (
                                 <View
@@ -95,18 +158,78 @@ const ViewPlan = ({ toggleModal }: { toggleModal: () => void }) => {
                                         style={styles.exerciseNumberContainer}
                                     >
                                         <Text style={styles.exerciseNumber}>
-                                            1
+                                            {index + 1}
                                         </Text>
                                     </View>
-                                    <View>
-                                        <View>
-                                            <Text>{exercise.exerciseName}</Text>
-                                        </View>
-                                        <View>
-                                            <Text>
-                                                {exercise.sets}x{exercise.reps},{" "}
-                                                {exercise.instructions}
-                                            </Text>
+
+                                    <View style={styles.workoutItemRight}>
+                                        <View style={styles.middle}>
+                                            <TextInput
+                                                value={
+                                                    exercise.exerciseName || ""
+                                                }
+                                                onChangeText={(text) => {
+                                                    handleExerciseNameChange(
+                                                        index,
+                                                        text
+                                                    );
+                                                }}
+                                            />
+                                            <View>
+                                                <View style={styles.row}>
+                                                    <Text>Sets: </Text>
+                                                    <TextInput
+                                                        style={
+                                                            styles.setRepCount
+                                                        }
+                                                        value={
+                                                            exercise.sets || ""
+                                                        }
+                                                        onChangeText={(
+                                                            text
+                                                        ) => {
+                                                            handleSetsChange(
+                                                                index,
+                                                                text
+                                                            );
+                                                        }}
+                                                    />
+                                                </View>
+
+                                                <View style={styles.row}>
+                                                    <Text>Reps: </Text>
+                                                    <TextInput
+                                                        style={
+                                                            styles.setRepCount
+                                                        }
+                                                        value={
+                                                            exercise.reps || ""
+                                                        }
+                                                        onChangeText={(
+                                                            text
+                                                        ) => {
+                                                            handleRepsChange(
+                                                                index,
+                                                                text
+                                                            );
+                                                        }}
+                                                    />
+                                                </View>
+                                                <TextInput
+                                                    style={styles.instructions}
+                                                    value={
+                                                        exercise.instructions ||
+                                                        ""
+                                                    }
+                                                    multiline={true}
+                                                    onChangeText={(text) => {
+                                                        handleExerciseNameChange(
+                                                            index,
+                                                            text
+                                                        );
+                                                    }}
+                                                />
+                                            </View>
                                         </View>
                                     </View>
                                 </View>
@@ -122,6 +245,45 @@ const ViewPlan = ({ toggleModal }: { toggleModal: () => void }) => {
 };
 
 const styles = StyleSheet.create({
+    workoutsContainer: {
+        overflow: "scroll",
+    },
+    instructions: {
+        width: "80%",
+    },
+    row: {
+        flexDirection: "row",
+    },
+    repCount: {
+        marginLeft: 6,
+        width: 45,
+        alignItems: "flex-end",
+        justifyContent: "flex-end",
+    },
+    setRepCount: {
+        width: 45,
+        alignItems: "flex-end",
+        justifyContent: "flex-end",
+    },
+    saveButton: {
+        backgroundColor: colors.orange_accent,
+        padding: 10,
+        borderRadius: 8,
+        alignItems: "center",
+        marginVertical: 10,
+    },
+    saveText: {
+        color: colors.white_onPrimary,
+    },
+    middle: {
+        width: "90%",
+    },
+    workoutItemRight: {
+        justifyContent: "space-between",
+        width: "80%",
+        display: "flex",
+        flexDirection: "row",
+    },
     container: {
         flex: 1,
         backgroundColor: colors.offWhite_background,

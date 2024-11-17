@@ -5,13 +5,28 @@ import WorkoutPlanForm from "@/components/WorkoutPlanForm";
 import BottomNav from "@/components/BottomNav";
 import env from "@/env/env";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
 
 export default function Dashboard() {
+    const router = useRouter();
+
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [workoutPlans, setWorkoutPlans] = useState<any>({});
 
     const toggleModal = () => {
         setIsModalVisible(!isModalVisible);
+    };
+
+    const viewWorkoutPlan = async (planId: string) => {
+        const token = await AsyncStorage.getItem("jwtToken");
+
+        if (token) {
+            console.log(planId);
+            router.push({
+                pathname: "/screens/ViewPlan/[workoutPlanId]",
+                params: { workoutPlanId: planId },
+            });
+        }
     };
 
     const deleteWorkoutPlan = async (planId: string) => {
@@ -144,11 +159,19 @@ export default function Dashboard() {
                                         style={styles.workoutPlan}
                                     >
                                         <View>
-                                            <Text
-                                                style={styles.workoutPlanText}
+                                            <TouchableOpacity
+                                                onPress={() =>
+                                                    viewWorkoutPlan(plan.planId)
+                                                }
                                             >
-                                                {plan.planName}
-                                            </Text>
+                                                <Text
+                                                    style={
+                                                        styles.workoutPlanText
+                                                    }
+                                                >
+                                                    {plan.planName}
+                                                </Text>
+                                            </TouchableOpacity>
                                             <Text
                                                 style={
                                                     styles.workoutPlanDateText
@@ -162,7 +185,7 @@ export default function Dashboard() {
                                         </View>
                                         <TouchableOpacity
                                             onPress={() =>
-                                                deleteWorkoutPlan(planId)
+                                                deleteWorkoutPlan(plan.planId)
                                             }
                                         >
                                             <Text>Delete</Text>

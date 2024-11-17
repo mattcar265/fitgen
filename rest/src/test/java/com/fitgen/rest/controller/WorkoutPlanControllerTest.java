@@ -4,19 +4,24 @@ import com.fitgen.rest.model.WorkoutPlan;
 import com.fitgen.rest.model.WorkoutPlanForm;
 import com.fitgen.rest.repository.WorkoutPlanRepository;
 import com.fitgen.rest.service.GPTService;
+import com.fitgen.rest.util.JwtUtil;
+import org.bson.types.ObjectId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.util.Date;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 
@@ -28,6 +33,9 @@ public class WorkoutPlanControllerTest {
 
     @Mock
     WorkoutPlanRepository workoutPlanRepository;
+
+    @Mock
+    JwtUtil jwtUtil;
 
     @BeforeEach
     void setUp() {
@@ -71,5 +79,74 @@ public class WorkoutPlanControllerTest {
         ResponseEntity<WorkoutPlan> response = workoutPlanController.getWorkoutPlanById(mockWorkoutPlan.getPlanId());
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
+    @Test
+    void updateWorkoutPlanByIdTest() throws Exception {
+        String authHeader = "Bearer sampleJWT";
+        String jwt = "sampleJWT";
+        String userIdString = "123456789123456789123456";
+        ObjectId userId = new ObjectId(userIdString);
+        String planId = "planId";
+
+        String workoutPlanJson = """
+                {
+                    "planId": "planId",
+                    "planName": "Updated Plan Name",
+                    "notes": "Updated Notes",
+                    "exercises": []
+                }
+                """;
+
+        WorkoutPlan existingPlan = new WorkoutPlan();
+        existingPlan.setPlanId(planId);
+        existingPlan.setPlanName("Old Name");
+        existingPlan.setNotes("Old Notes");
+        existingPlan.setCreationDate(new Date());
+        existingPlan.setUserId(userId);
+
+        Mockito.lenient().when(jwtUtil.extractUserId(jwt)).thenReturn(userIdString);
+        when(workoutPlanRepository.findById(planId)).thenReturn(Optional.of(existingPlan));
+        when(workoutPlanRepository.save(any(WorkoutPlan.class))).thenReturn(existingPlan);
+
+        ResponseEntity<String> response = workoutPlanController.updateWorkoutPlanById(authHeader, planId, workoutPlanJson);
+
+        assertEquals("finished updating", response.getBody());
+        assertEquals("Updated Plan Name", existingPlan.getPlanName());
+        assertEquals("Updated Notes", existingPlan.getNotes());
+    }
+
+    @Test
+    void updateWorkoutPlanByIdNoExistingWorkoutTest() throws Exception {
+        String authHeader = "Bearer sampleJWT";
+        String jwt = "sampleJWT";
+        String userIdString = "123456789123456789123456";
+        ObjectId userId = new ObjectId(userIdString);
+        String planId = "planId";
+
+        String workoutPlanJson = """
+                {
+                    "planId": "planId",
+                    "planName": "Updated Plan Name",
+                    "notes": "Updated Notes",
+                    "exercises": []
+                }
+                """;
+
+        WorkoutPlan existingPlan = new WorkoutPlan();
+        existingPlan.setPlanId(planId);
+        existingPlan.setPlanName("Old Name");
+        existingPlan.setNotes("Old Notes");
+        existingPlan.setCreationDate(new Date());
+        existingPlan.setUserId(userId);
+
+        Mockito.lenient().when(jwtUtil.extractUserId(jwt)).thenReturn(userIdString);
+        when(workoutPlanRepository.findById(planId)).thenReturn(Optional.empty());
+
+        ResponseEntity<String> response = workoutPlanController.updateWorkoutPlanById(authHeader, planId, workoutPlanJson);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals("Workout plan not found", response.getBody());
+
     }
 }
