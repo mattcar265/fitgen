@@ -1,6 +1,6 @@
 import colors from "@/constants/colors";
 import React from "react";
-import env from "../env/env";
+// import env from "../env/env";
 import { Controller, useForm } from "react-hook-form";
 import {
     View,
@@ -31,7 +31,7 @@ const SignUpForm = () => {
     const onSubmit = async (data: any) => {
         console.log(data);
 
-        const backend_url = "http://" + env.BACKEND_IP + ":8080/signup";
+        const backend_url = "http://localhost:8080/signup";
         console.log(backend_url);
 
         const response = await fetch(backend_url, {

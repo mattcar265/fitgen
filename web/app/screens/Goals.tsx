@@ -5,16 +5,18 @@ import {
     TouchableOpacity,
     Modal,
     TextInput,
+    Image,
 } from "react-native";
 import colors from "@/constants/colors";
 import React, { useEffect, useState } from "react";
 import WorkoutPlanForm from "@/components/WorkoutPlanForm";
 import BottomNav from "@/components/BottomNav";
 import { Controller, useForm } from "react-hook-form";
-import env from "@/env/env";
+// import env from "@/env/env";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Picker } from "@react-native-picker/picker";
+import profileIcon from "@/assets/images/profile.png";
 
 export default function Goals() {
     const router = useRouter();
@@ -46,8 +48,7 @@ export default function Goals() {
         }
         console.log(data);
 
-        const backend_url =
-            "http://" + env.BACKEND_IP + ":8080/user/fitness-goals";
+        const backend_url = "http://localhost:8080/user/fitness-goals";
         console.log(backend_url);
 
         const response = await fetch(backend_url, {
@@ -69,16 +70,8 @@ export default function Goals() {
         <View style={styles.container}>
             <View style={styles.topNav}>
                 <TouchableOpacity>
-                    <Text>Account</Text>
+                    <Image source={profileIcon} />
                 </TouchableOpacity>
-                <View>
-                    <TouchableOpacity>
-                        <Text>Notifications</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity>
-                        <Text>Settings</Text>
-                    </TouchableOpacity>
-                </View>
             </View>
 
             <View style={styles.formContainer}>

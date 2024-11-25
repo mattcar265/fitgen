@@ -30,7 +30,7 @@ const LoginForm = () => {
     const onSubmit = async (data: any) => {
         console.log(data);
 
-        const backend_url = "http://" + env.BACKEND_IP + ":8080/login";
+        const backend_url = "http://localhost:8080/login";
         console.log(backend_url);
 
         const response = await fetch(backend_url, {
