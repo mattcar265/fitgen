@@ -1,6 +1,6 @@
 import BottomNav from "@/components/BottomNav";
 import colors from "@/constants/colors";
-// import env from "@/env/env";
+import env from "@/env/env";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
@@ -53,7 +53,7 @@ const ViewPlan = ({ toggleModal }: { toggleModal: () => void }) => {
             const token = await AsyncStorage.getItem("jwtToken");
 
             const response = await fetch(
-                `http://localhost:8080/workout-plans/${workoutPlanId}`,
+                `http://" + env.BACKEND_IP + "/workout-plans/${workoutPlanId}`,
                 {
                     method: "PUT",
                     headers: {
@@ -79,7 +79,10 @@ const ViewPlan = ({ toggleModal }: { toggleModal: () => void }) => {
             console.log("from view page:" + workoutPlanId);
             try {
                 const response = await fetch(
-                    "http://localhost:8080/workout-plans/" + workoutPlanId
+                    "http://" +
+                        env.BACKEND_IP +
+                        "/workout-plans/" +
+                        workoutPlanId
                 );
                 if (response.ok) {
                     const data = await response.json();

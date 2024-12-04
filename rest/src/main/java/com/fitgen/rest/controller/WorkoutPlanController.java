@@ -32,6 +32,21 @@ public class WorkoutPlanController {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @PatchMapping("/{id}/incrementLikes")
+    public ResponseEntity<String> incrementLikes(@PathVariable String id) {
+        Optional<WorkoutPlan> optionalWorkoutPlan = workoutPlanRepository.findById(id);
+
+        if(optionalWorkoutPlan.isPresent()) {
+            WorkoutPlan workoutPlan = optionalWorkoutPlan.get();
+            workoutPlan.setLikes((workoutPlan.getLikes() == 0 ? 1 : workoutPlan.getLikes() + 1));
+            workoutPlanRepository.save(workoutPlan);
+
+            return ResponseEntity.ok("Likes incremented for plan ID: " + id);
+        } else {
+            throw new IllegalArgumentException("Workout Plan ID: " + id + " not found");
+        }
+    }
+
     @GetMapping
     public ResponseEntity<List<String>> getWorkoutPlansForUser(@RequestHeader("Authorization") String authHeader) {
         String jwt = authHeader.substring(7);

@@ -13,7 +13,7 @@ import React, { useEffect, useState } from "react";
 import WorkoutPlanForm from "@/components/WorkoutPlanForm";
 import BottomNav from "@/components/BottomNav";
 import { Controller, useForm } from "react-hook-form";
-// import env from "@/env/env";
+import env from "@/env/env";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import profileIcon from "@/assets/images/profile.png";
@@ -40,13 +40,16 @@ export default function Account() {
             }
 
             try {
-                const response = await fetch("http://localhost:8080/user", {
-                    method: "GET",
-                    headers: {
-                        Authorization: "Bearer " + token,
-                        "Content-Type": "application/json",
-                    },
-                });
+                const response = await fetch(
+                    "http://" + env.BACKEND_IP + "/user",
+                    {
+                        method: "GET",
+                        headers: {
+                            Authorization: "Bearer " + token,
+                            "Content-Type": "application/json",
+                        },
+                    }
+                );
 
                 if (response.ok) {
                     const data = await response.json();
@@ -77,7 +80,8 @@ export default function Account() {
         }
         console.log(data);
 
-        const backend_url = "http://localhost:8080/user/account-details";
+        const backend_url =
+            "http://" + env.BACKEND_IP + "/user/account-details";
         console.log(backend_url);
 
         const response = await fetch(backend_url, {
@@ -102,7 +106,7 @@ export default function Account() {
             return;
         }
 
-        const backend_url = "http://localhost:8080/user";
+        const backend_url = "http://" + env.BACKEND_IP + "/user";
 
         const response = await fetch(backend_url, {
             method: "DELETE",

@@ -10,7 +10,7 @@ import colors from "@/constants/colors";
 import React, { useEffect, useState } from "react";
 import WorkoutPlanForm from "@/components/WorkoutPlanForm";
 import BottomNav from "@/components/BottomNav";
-// import env from "@/env/env";
+import env from "@/env/env";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import deleteIcon from "@/assets/images/trash.png";
@@ -47,7 +47,7 @@ export default function Dashboard() {
             }
 
             const response = await fetch(
-                `http://localhost:8080/workout-plans/${planId}`,
+                `http://" + env.BACKEND_IP + "/workout-plans/${planId}`,
                 {
                     method: "DELETE",
                     headers: {
@@ -79,7 +79,7 @@ export default function Dashboard() {
             }
 
             const response = await fetch(
-                "http://localhost:8080/workout-plans",
+                "http://" + env.BACKEND_IP + "/workout-plans",
                 {
                     method: "GET",
                     headers: {
@@ -98,7 +98,10 @@ export default function Dashboard() {
                 const workoutPlans = await Promise.all(
                     workoutPlanIds.map(async (planId: string) => {
                         const planResponse = await fetch(
-                            "http://localhost:8080/workout-plans/" + planId,
+                            "http://" +
+                                env.BACKEND_IP +
+                                "/workout-plans/" +
+                                planId,
                             {
                                 method: "GET",
                                 headers: {
