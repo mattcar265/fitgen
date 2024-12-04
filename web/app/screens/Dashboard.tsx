@@ -47,7 +47,7 @@ export default function Dashboard() {
             }
 
             const response = await fetch(
-                `http://" + env.BACKEND_IP + ":8080/workout-plans/${planId}`,
+                `http://${env.BACKEND_IP}:8080/workout-plans/${planId}`,
                 {
                     method: "DELETE",
                     headers: {
@@ -100,7 +100,7 @@ export default function Dashboard() {
                         const planResponse = await fetch(
                             "http://" +
                                 env.BACKEND_IP +
-                                "/workout-plans/" +
+                                ":8080/workout-plans/" +
                                 planId,
                             {
                                 method: "GET",
