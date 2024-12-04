@@ -129,6 +129,11 @@ export default function Dashboard() {
         fetchWorkoutPlans();
     }, []);
 
+    const logout = async () => {
+        await AsyncStorage.removeItem("jwtToken");
+        router.push("/screens/Login");
+    };
+
     return (
         <View style={styles.container}>
             <View style={styles.topNav}>
@@ -137,6 +142,14 @@ export default function Dashboard() {
                 >
                     <Image source={profileIcon} />
                 </TouchableOpacity>
+                <View>
+                    <TouchableOpacity onPress={logout}>
+                        <Text>Logout</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity>
+                        <Text>Settings</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
 
             <View style={styles.dashboardContainer}>
