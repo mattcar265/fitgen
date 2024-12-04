@@ -4,6 +4,7 @@ import com.fitgen.rest.exception.SignupDataToMongoException;
 import com.fitgen.rest.exception.UserAlreadyExistsException;
 import com.fitgen.rest.model.User;
 import com.fitgen.rest.repository.UserRepository;
+import com.fitgen.rest.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,10 @@ public class SignUpController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private EmailService emailService;
+
     @PostMapping
     public ResponseEntity<String> signUp(@RequestBody Map<String, Object> body) throws SignupDataToMongoException, UserAlreadyExistsException {
         System.out.println("Received JSON data from frontend:" + body);
@@ -34,7 +39,6 @@ public class SignUpController {
 
         User user = new User();
         user.setEmail(email);
-        user.setEmail(email);
         user.setPassword(password);
         user.setPhone(phone);
         user.setHeight(height);
@@ -48,6 +52,7 @@ public class SignUpController {
             throw new SignupDataToMongoException("Error sending processed user data to MongoDB", e);
         }
 
+        emailService.sendWelcomeEmail(email);
 
         return ResponseEntity.ok("Signup data received and processed successfully");
     }
