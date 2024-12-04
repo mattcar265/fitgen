@@ -1,11 +1,20 @@
-import { View, Text, StyleSheet, TouchableOpacity, Modal } from "react-native";
+import {
+    View,
+    Text,
+    StyleSheet,
+    TouchableOpacity,
+    Modal,
+    Image,
+} from "react-native";
 import colors from "@/constants/colors";
 import React, { useEffect, useState } from "react";
 import WorkoutPlanForm from "@/components/WorkoutPlanForm";
 import BottomNav from "@/components/BottomNav";
-import env from "@/env/env";
+// import env from "@/env/env";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
+import deleteIcon from "@/assets/images/trash.png";
+import profileIcon from "@/assets/images/profile.png";
 
 export default function Dashboard() {
     const router = useRouter();
@@ -38,7 +47,7 @@ export default function Dashboard() {
             }
 
             const response = await fetch(
-                `http://${env.BACKEND_IP}:8080/workout-plans/${planId}`,
+                `http://localhost:8080/workout-plans/${planId}`,
                 {
                     method: "DELETE",
                     headers: {
@@ -70,7 +79,7 @@ export default function Dashboard() {
             }
 
             const response = await fetch(
-                "http://" + env.BACKEND_IP + ":8080/workout-plans",
+                "http://localhost:8080/workout-plans",
                 {
                     method: "GET",
                     headers: {
@@ -89,10 +98,7 @@ export default function Dashboard() {
                 const workoutPlans = await Promise.all(
                     workoutPlanIds.map(async (planId: string) => {
                         const planResponse = await fetch(
-                            "http://" +
-                                env.BACKEND_IP +
-                                ":8080/workout-plans/" +
-                                planId,
+                            "http://localhost:8080/workout-plans/" + planId,
                             {
                                 method: "GET",
                                 headers: {
@@ -134,7 +140,7 @@ export default function Dashboard() {
                 <TouchableOpacity
                     onPress={() => router.push("/screens/Account")}
                 >
-                    <Text>Account</Text>
+                    <Image source={profileIcon} />
                 </TouchableOpacity>
                 <View>
                     <TouchableOpacity onPress={logout}>
@@ -195,7 +201,7 @@ export default function Dashboard() {
                                                 deleteWorkoutPlan(plan.planId)
                                             }
                                         >
-                                            <Text>Delete</Text>
+                                            <Image source={deleteIcon} />
                                         </TouchableOpacity>
                                     </View>
                                 )

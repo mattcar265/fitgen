@@ -1,5 +1,5 @@
 import colors from "@/constants/colors";
-import env from "@/env/env";
+// import env from "@/env/env";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
@@ -33,8 +33,7 @@ const WorkoutPlanForm = ({ toggleModal }: { toggleModal: () => void }) => {
     const onSubmit = async (data: any) => {
         console.log(data);
 
-        const backend_url =
-            "http://" + env.BACKEND_IP + ":8080/workout-plans/generate-plan";
+        const backend_url = "http://localhost:8080/workout-plans/generate-plan";
         console.log(backend_url);
 
         const token = await AsyncStorage.getItem("jwtToken");
