@@ -34,7 +34,7 @@ const WorkoutPlanForm = ({ toggleModal }: { toggleModal: () => void }) => {
         console.log(data);
 
         const backend_url =
-            "http://" + env.BACKEND_IP + "/workout-plans/generate-plan";
+            "http://" + env.BACKEND_IP + ":8080/workout-plans/generate-plan";
         console.log(backend_url);
 
         const token = await AsyncStorage.getItem("jwtToken");

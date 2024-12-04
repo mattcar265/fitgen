@@ -41,7 +41,7 @@ export default function Account() {
 
             try {
                 const response = await fetch(
-                    "http://" + env.BACKEND_IP + "/user",
+                    "http://" + env.BACKEND_IP + ":8080/user",
                     {
                         method: "GET",
                         headers: {
@@ -81,7 +81,7 @@ export default function Account() {
         console.log(data);
 
         const backend_url =
-            "http://" + env.BACKEND_IP + "/user/account-details";
+            "http://" + env.BACKEND_IP + ":8080/user/account-details";
         console.log(backend_url);
 
         const response = await fetch(backend_url, {
@@ -106,7 +106,7 @@ export default function Account() {
             return;
         }
 
-        const backend_url = "http://" + env.BACKEND_IP + "/user";
+        const backend_url = "http://" + env.BACKEND_IP + ":8080/user";
 
         const response = await fetch(backend_url, {
             method: "DELETE",

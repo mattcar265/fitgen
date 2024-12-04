@@ -53,7 +53,7 @@ const ViewPlan = ({ toggleModal }: { toggleModal: () => void }) => {
             const token = await AsyncStorage.getItem("jwtToken");
 
             const response = await fetch(
-                `http://" + env.BACKEND_IP + "/workout-plans/${workoutPlanId}`,
+                `http://" + env.BACKEND_IP + ":8080/workout-plans/${workoutPlanId}`,
                 {
                     method: "PUT",
                     headers: {

@@ -48,7 +48,8 @@ export default function Goals() {
         }
         console.log(data);
 
-        const backend_url = "http://" + env.BACKEND_IP + "/user/fitness-goals";
+        const backend_url =
+            "http://" + env.BACKEND_IP + ":8080/user/fitness-goals";
         console.log(backend_url);
 
         const response = await fetch(backend_url, {
