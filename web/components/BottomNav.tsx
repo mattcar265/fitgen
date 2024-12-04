@@ -1,6 +1,9 @@
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
 import colors from "@/constants/colors";
 import { useRouter } from "expo-router";
+import homeIcon from "@/assets/images/home.png";
+import plusIcon from "@/assets/images/plus.png";
+import trendUpIcon from "@/assets/images/trend-up.png";
 
 const BottomNav = ({ toggleModal }: { toggleModal: () => void }) => {
     const router = useRouter();
@@ -11,19 +14,19 @@ const BottomNav = ({ toggleModal }: { toggleModal: () => void }) => {
                 style={styles.bottomNavItem}
                 onPress={() => router.push("/screens/Dashboard")}
             >
-                <Text style={styles.bottomNavItemText}>Dashboard</Text>
+                <Image source={homeIcon} />
             </TouchableOpacity>
             <TouchableOpacity
                 style={styles.bottomNavItem}
                 onPress={toggleModal}
             >
-                <Text style={styles.bottomNavItemText}>Generate Workout</Text>
+                <Image source={plusIcon} />
             </TouchableOpacity>
             <TouchableOpacity
                 style={styles.bottomNavItem}
                 onPress={() => router.push("/screens/Goals")}
             >
-                <Text style={styles.bottomNavItemText}>Goals</Text>
+                <Image source={trendUpIcon} />
             </TouchableOpacity>
         </View>
     );

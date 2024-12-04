@@ -1,6 +1,6 @@
 import BottomNav from "@/components/BottomNav";
 import colors from "@/constants/colors";
-import env from "@/env/env";
+// import env from "@/env/env";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
@@ -11,7 +11,9 @@ import {
     View,
     StyleSheet,
     TextInput,
+    Image,
 } from "react-native";
+import profileIcon from "@/assets/images/profile.png";
 
 const ViewPlan = ({ toggleModal }: { toggleModal: () => void }) => {
     const { workoutPlanId } = useLocalSearchParams();
@@ -51,7 +53,7 @@ const ViewPlan = ({ toggleModal }: { toggleModal: () => void }) => {
             const token = await AsyncStorage.getItem("jwtToken");
 
             const response = await fetch(
-                `http://${env.BACKEND_IP}:8080/workout-plans/${workoutPlanId}`,
+                `http://localhost:8080/workout-plans/${workoutPlanId}`,
                 {
                     method: "PUT",
                     headers: {
@@ -77,10 +79,7 @@ const ViewPlan = ({ toggleModal }: { toggleModal: () => void }) => {
             console.log("from view page:" + workoutPlanId);
             try {
                 const response = await fetch(
-                    "http://" +
-                        env.BACKEND_IP +
-                        ":8080/workout-plans/" +
-                        workoutPlanId
+                    "http://localhost:8080/workout-plans/" + workoutPlanId
                 );
                 if (response.ok) {
                     const data = await response.json();
@@ -118,16 +117,8 @@ const ViewPlan = ({ toggleModal }: { toggleModal: () => void }) => {
         <View style={styles.container}>
             <View style={styles.topNav}>
                 <TouchableOpacity>
-                    <Text>Account</Text>
+                    <Image source={profileIcon} />
                 </TouchableOpacity>
-                <View>
-                    <TouchableOpacity>
-                        <Text>Notifications</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity>
-                        <Text>Settings</Text>
-                    </TouchableOpacity>
-                </View>
             </View>
 
             <View style={styles.planContainer}>

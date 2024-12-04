@@ -1,7 +1,8 @@
 import colors from "@/constants/colors";
-import env from "@/env/env";
+// import env from "@/env/env";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
     TextInput,
@@ -12,7 +13,9 @@ import {
 } from "react-native";
 
 const WorkoutPlanForm = ({ toggleModal }: { toggleModal: () => void }) => {
+    const [workoutPlans, setWorkoutPlans] = useState<any>({});
     const router = useRouter();
+    const [disableSubmit, setDisableSubmit] = useState(false);
 
     const {
         control,
@@ -30,8 +33,7 @@ const WorkoutPlanForm = ({ toggleModal }: { toggleModal: () => void }) => {
     const onSubmit = async (data: any) => {
         console.log(data);
 
-        const backend_url =
-            "http://" + env.BACKEND_IP + ":8080/workout-plans/generate-plan";
+        const backend_url = "http://localhost:8080/workout-plans/generate-plan";
         console.log(backend_url);
 
         const token = await AsyncStorage.getItem("jwtToken");
@@ -57,6 +59,74 @@ const WorkoutPlanForm = ({ toggleModal }: { toggleModal: () => void }) => {
 
         toggleModal();
     };
+
+    const fetchWorkoutPlans = async () => {
+        try {
+            const token = await AsyncStorage.getItem("jwtToken");
+            if (!token) {
+                console.log("No JWT token found");
+                return;
+            }
+
+            const response = await fetch(
+                "http://" + env.BACKEND_IP + ":8080/workout-plans",
+                {
+                    method: "GET",
+                    headers: {
+                        Authorization: "Bearer " + token,
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+
+            if (response.ok) {
+                const workoutPlanIds = await response.json();
+                const plansMap: any = {};
+
+                console.log("workout plan IDs: " + workoutPlanIds);
+
+                const workoutPlans = await Promise.all(
+                    workoutPlanIds.map(async (planId: string) => {
+                        const planResponse = await fetch(
+                            "http://" +
+                                env.BACKEND_IP +
+                                ":8080/workout-plans/" +
+                                planId,
+                            {
+                                method: "GET",
+                                headers: {
+                                    Authorization: "Bearer " + token,
+                                    "Content-Type": "application/json",
+                                },
+                            }
+                        );
+
+                        if (planResponse.ok) {
+                            const planData = await planResponse.json();
+                            plansMap[planId] = planData;
+                        } else {
+                            console.error("Failed to fetch planId: " + planId);
+                        }
+                    })
+                );
+                console.log(plansMap);
+
+                setWorkoutPlans(plansMap);
+            }
+        } catch {
+            console.error("Error retrieving workout plans");
+        }
+    };
+
+    useEffect(() => {
+        fetchWorkoutPlans();
+
+        let numOfPlans = Object.keys(workoutPlans).length;
+
+        if (numOfPlans >= 30) {
+            setDisableSubmit(true);
+        }
+    }, []);
 
     return (
         <View style={styles.container}>
@@ -116,14 +186,22 @@ const WorkoutPlanForm = ({ toggleModal }: { toggleModal: () => void }) => {
             />
 
             <View>
-                <TouchableOpacity
-                    onPress={handleSubmit(onSubmit)}
-                    style={styles.submitButton}
-                >
-                    <Text style={styles.submitButtonText}>
-                        Generate Workout Plan
-                    </Text>
-                </TouchableOpacity>
+                {disableSubmit ? (
+                    <TouchableOpacity style={styles.submitButtonDisabled}>
+                        <Text style={styles.submitButtonText}>
+                            Maximum Plans Reached
+                        </Text>
+                    </TouchableOpacity>
+                ) : (
+                    <TouchableOpacity
+                        onPress={handleSubmit(onSubmit)}
+                        style={styles.submitButton}
+                    >
+                        <Text style={styles.submitButtonText}>
+                            Generate Workout Plan
+                        </Text>
+                    </TouchableOpacity>
+                )}
             </View>
         </View>
     );
@@ -166,6 +244,15 @@ const styles = StyleSheet.create({
     },
     submitButton: {
         backgroundColor: colors.orange_accent,
+        padding: 10,
+        borderRadius: 8,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    submitButtonDisabled: {
+        backgroundColor: colors.orange_accent,
+        opacity: 0.5,
         padding: 10,
         borderRadius: 8,
         display: "flex",

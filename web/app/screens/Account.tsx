@@ -6,15 +6,17 @@ import {
     Modal,
     TextInput,
     ScrollView,
+    Image,
 } from "react-native";
 import colors from "@/constants/colors";
 import React, { useEffect, useState } from "react";
 import WorkoutPlanForm from "@/components/WorkoutPlanForm";
 import BottomNav from "@/components/BottomNav";
 import { Controller, useForm } from "react-hook-form";
-import env from "@/env/env";
+// import env from "@/env/env";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import profileIcon from "@/assets/images/profile.png";
 
 export default function Account() {
     const router = useRouter();
@@ -38,16 +40,13 @@ export default function Account() {
             }
 
             try {
-                const response = await fetch(
-                    "http://" + env.BACKEND_IP + ":8080/user",
-                    {
-                        method: "GET",
-                        headers: {
-                            Authorization: "Bearer " + token,
-                            "Content-Type": "application/json",
-                        },
-                    }
-                );
+                const response = await fetch("http://localhost:8080/user", {
+                    method: "GET",
+                    headers: {
+                        Authorization: "Bearer " + token,
+                        "Content-Type": "application/json",
+                    },
+                });
 
                 if (response.ok) {
                     const data = await response.json();
@@ -78,8 +77,7 @@ export default function Account() {
         }
         console.log(data);
 
-        const backend_url =
-            "http://" + env.BACKEND_IP + ":8080/user/account-details";
+        const backend_url = "http://localhost:8080/user/account-details";
         console.log(backend_url);
 
         const response = await fetch(backend_url, {
@@ -104,7 +102,7 @@ export default function Account() {
             return;
         }
 
-        const backend_url = "http://" + env.BACKEND_IP + ":8080/user";
+        const backend_url = "http://localhost:8080/user";
 
         const response = await fetch(backend_url, {
             method: "DELETE",
@@ -124,16 +122,8 @@ export default function Account() {
         <View style={styles.container}>
             <View style={styles.topNav}>
                 <TouchableOpacity>
-                    <Text>Account</Text>
+                    <Image source={profileIcon} />
                 </TouchableOpacity>
-                <View>
-                    <TouchableOpacity>
-                        <Text>Notifications</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity>
-                        <Text>Settings</Text>
-                    </TouchableOpacity>
-                </View>
             </View>
 
             <ScrollView contentContainerStyle={styles.scrollContainer}>
