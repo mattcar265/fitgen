@@ -8,4 +8,5 @@ import java.util.List;
 
 public interface WorkoutPlanRepository extends MongoRepository<WorkoutPlan, String> {
     List<WorkoutPlan> findByUserId(ObjectId userId);
+    List<WorkoutPlan> findTop10ByOrderByLikesDesc();
 }

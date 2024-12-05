@@ -10,7 +10,7 @@ import colors from "@/constants/colors";
 import React, { useEffect, useState } from "react";
 import WorkoutPlanForm from "@/components/WorkoutPlanForm";
 import BottomNav from "@/components/BottomNav";
-// import env from "@/env/env";
+import env from "@/env/env";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import deleteIcon from "@/assets/images/trash.png";
@@ -21,6 +21,7 @@ export default function Dashboard() {
 
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [workoutPlans, setWorkoutPlans] = useState<any>({});
+    const [suggestedPlan, setSuggestedPlan] = useState<any>(null);
 
     const toggleModal = () => {
         setIsModalVisible(!isModalVisible);
@@ -47,7 +48,7 @@ export default function Dashboard() {
             }
 
             const response = await fetch(
-                `http://localhost:8080/workout-plans/${planId}`,
+                `http://${env.BACKEND_IP}:8080/workout-plans/${planId}`,
                 {
                     method: "DELETE",
                     headers: {
@@ -79,7 +80,7 @@ export default function Dashboard() {
             }
 
             const response = await fetch(
-                "http://localhost:8080/workout-plans",
+                "http://" + env.BACKEND_IP + ":8080/workout-plans",
                 {
                     method: "GET",
                     headers: {
@@ -98,7 +99,10 @@ export default function Dashboard() {
                 const workoutPlans = await Promise.all(
                     workoutPlanIds.map(async (planId: string) => {
                         const planResponse = await fetch(
-                            "http://localhost:8080/workout-plans/" + planId,
+                            "http://" +
+                                env.BACKEND_IP +
+                                ":8080/workout-plans/" +
+                                planId,
                             {
                                 method: "GET",
                                 headers: {
@@ -125,8 +129,42 @@ export default function Dashboard() {
         }
     };
 
+    const fetchSuggestedPlan = async () => {
+        try {
+            const token = await AsyncStorage.getItem("jwtToken");
+            if (!token) {
+                console.log("No JWT token found");
+                return;
+            }
+
+            const response = await fetch(
+                "http://" +
+                    env.BACKEND_IP +
+                    ":8080/workout-plans/suggested-plan",
+                {
+                    method: "GET",
+                    headers: {
+                        Authorization: "Bearer " + token,
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+
+            if (response.ok) {
+                const suggestedPlanData = await response.json();
+                console.log("Suggested Plan: " + suggestedPlanData);
+                setSuggestedPlan(suggestedPlanData);
+            } else {
+                console.error("Failed to fetch suggested plan");
+            }
+        } catch {
+            console.error("Error retrieving workout plans");
+        }
+    };
+
     useEffect(() => {
         fetchWorkoutPlans();
+        fetchSuggestedPlan();
     }, []);
 
     const logout = async () => {
@@ -163,6 +201,33 @@ export default function Dashboard() {
                             Workout Plans
                         </Text>
                     </View>
+
+                    <View style={styles.suggestedPlanContainer}>
+                        <Text style={styles.suggestedPlanText}>
+                            Suggested Plan
+                        </Text>
+                        {suggestedPlan ? (
+                            <View>
+                                <View>
+                                    <Text style={styles.suggestedPlanTitle}>
+                                        {suggestedPlan.planName}
+                                    </Text>
+                                </View>
+                                <TouchableOpacity
+                                    onPress={() =>
+                                        viewWorkoutPlan(suggestedPlan.planId)
+                                    }
+                                >
+                                    <Text style={styles.suggestedPlanText}>
+                                        View Plan
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
+                        ) : (
+                            <Text>No suggested plan</Text>
+                        )}
+                    </View>
+
                     <View style={styles.workoutPlansList}>
                         {Object.keys(workoutPlans).length > 0 ? (
                             Object.entries(workoutPlans).map(
@@ -201,7 +266,10 @@ export default function Dashboard() {
                                                 deleteWorkoutPlan(plan.planId)
                                             }
                                         >
-                                            <Image source={deleteIcon} />
+                                            <Image
+                                                style={styles.deleteIcon}
+                                                source={deleteIcon}
+                                            />
                                         </TouchableOpacity>
                                     </View>
                                 )
@@ -238,6 +306,29 @@ export default function Dashboard() {
 }
 
 const styles = StyleSheet.create({
+    deleteIcon: {
+        height: 20,
+        width: 15,
+    },
+    suggestedPlanContainer: {
+        backgroundColor: "#dbcfe0",
+        padding: 10,
+        marginVertical: 10,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+        gap: 5,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: colors.grey_divider,
+    },
+    suggestedPlanText: {
+        fontSize: 16,
+    },
+    suggestedPlanTitle: {
+        fontSize: 16,
+        fontWeight: 600,
+    },
     container: {
         flex: 1,
         backgroundColor: colors.offWhite_background,

@@ -3,7 +3,6 @@ package com.fitgen.rest.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fitgen.rest.exception.GPTKeyException;
-import com.fitgen.rest.exception.SignupDataToMongoException;
 import com.fitgen.rest.model.Exercise;
 import com.fitgen.rest.model.User;
 import com.fitgen.rest.model.WorkoutPlan;
@@ -18,7 +17,6 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.HttpHeaders;
 
-import javax.swing.text.html.Option;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -182,6 +180,34 @@ public class GPTService {
         }
     }
 
+    public String storeSuggestedWorkoutPlan(String responseBody, String userIdString) throws Exception {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+
+            JsonNode rootNode = objectMapper.readTree(responseBody);
+            String content = rootNode.path("choices").get(0).path("message").path("content").asText();
+            JsonNode contentNode = objectMapper.readTree(content);
+
+            String planName = contentNode.path("planName").asText();
+            String notes = contentNode.path("notes").asText();
+            Date creationDate = new Date();
+            List<Exercise> exercises = getExercises(contentNode);
+
+            WorkoutPlan workoutPlan = new WorkoutPlan();
+            workoutPlan.setPlanName(planName);
+            workoutPlan.setNotes(notes);
+            workoutPlan.setCreationDate(creationDate);
+            workoutPlan.setExercises(exercises);
+
+            System.out.println("Plan Name:" + planName);
+            System.out.println("Exercises:" + exercises.toString());
+
+            return workoutPlanRepository.save(workoutPlan).getPlanId();
+        } catch (Exception e) {
+            throw new Exception("Error storing workout plan", e);
+        }
+    }
+
     private List<Exercise> getExercises(JsonNode contentNode) {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode exercisesNode = contentNode.path("exercises");
@@ -213,6 +239,96 @@ public class GPTService {
                     userAge, userHeight, userWeight, gender, userPrimaryGoal, userSecondaryGoal);
         } else {
             throw new Exception("Cannot find user by ID: " + userIdString);
+        }
+    }
+
+    public String getSuggestedPlan(String userIdString, User user) throws GPTKeyException {
+        try {
+            String apiKey = getApiKey();
+
+            RestTemplate restTemplate = new RestTemplate();
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", "Bearer " + apiKey);
+            headers.set("Content-Type", "application/json");
+
+            String userDetailsForPrompt = getUserDetails(userIdString);
+
+            String primaryGoal = user.getPrimaryGoal();
+
+            List<WorkoutPlan> mostLikedSimilarPlans = workoutPlanRepository.findTop10ByOrderByLikesDesc();
+
+            String mostLikedSimilarPlansString = mostLikedSimilarPlans.stream()
+                    .map(plan -> String.format("Plan: %s, Likes: %d", plan.getPlanName(), plan.getLikes()))
+                    .reduce((plan1, plan2) -> plan1 + "\n" + plan2).orElse("No popular plans available.");
+
+            String gptPrompt = String.format(
+                    """
+                    For the user details: %s,
+                    Generate a workout plan in JSON format based on the following parameters:
+                    1. planName (optional): if provided, use it as the name of the workout plan. if not, generate one contextually.
+                    2. duration (optional): if provided, use it as the total length of the work. If not, generate one in minutes.
+                    3. description (optional): if provided, use it as a guide of what type of workout this should be.
+                    The JSON must contain the following fields:
+                    - planId: leave it blank in the JSON.
+                    - planName: if provided as parameter, use the parameter. If not, generate one contextually.
+                    - notes: if applicable, provide special reminders or notes.
+                    - creationDate: leave it blank in the JSON.
+                    - exercises: a nested JSON of each exercise of the workout plan, where each exercise contains:
+                        - exerciseName: generate a name for the exercise.
+                        - duration: if applicable, generate a duration for the exercise in minutes.
+                        - instructions: if applicable, generate instructions for the exercise.
+                        - sets: if applicable, amount of sets for the exercise.
+                        - reps: if applicable, amount of reps for the exercise.
+                    Note: if something is not applicable, set to null.
+                    Only return the JSON, as this string response will be used to convert to JSON.
+                    Below is an example JSON:
+                    {
+                      "planId": null,
+                      "duration": 45,
+                      "description": "cardio workout",
+                      "creationDate": null,
+                      "exercises": [
+                        {
+                          "exerciseName": "Warmup",
+                          "duration": 5,
+                          "instructions": "treadmill at a light pace",
+                          "sets": null,
+                          "reps": null
+                        },
+                        {
+                          "exerciseName": "Bench Press",
+                          "duration": null,
+                          "instructions": null,
+                          "sets": 3,
+                          "reps": 8
+                        }
+                      ]
+                    }
+                    The plan should heavily weight from existing plans listed below, if one has the shared secondary goal of
+                    %s, then it should be favored. The like count is the next most important indicator.
+                    """, userDetailsForPrompt, user.getSecondaryGoal(), mostLikedSimilarPlansString);
+
+            System.out.println(gptPrompt);
+
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("model", "gpt-3.5-turbo");
+            requestBody.put("messages", List.of(
+                    Map.of("role", "user", "content", gptPrompt)
+            ));
+
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+            ResponseEntity<String> response = restTemplate.postForEntity(API_URL, entity, String.class);
+
+            System.out.println(response.getBody());
+
+            return storeSuggestedWorkoutPlan(response.getBody(), userIdString);
+        } catch (GPTKeyException e) {
+            throw new GPTKeyException("Error retrieving ChatGPT API key", e);
+        } catch (RestClientException e) {
+            throw new RestClientException("Error calling ChatGPT API", e);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 }

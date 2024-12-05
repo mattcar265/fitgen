@@ -2,10 +2,11 @@ package com.fitgen.rest.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fitgen.rest.exception.GPTKeyException;
 import com.fitgen.rest.model.Exercise;
+import com.fitgen.rest.model.User;
 import com.fitgen.rest.model.WorkoutPlan;
+import com.fitgen.rest.repository.UserRepository;
 import com.fitgen.rest.repository.WorkoutPlanRepository;
 import com.fitgen.rest.service.GPTService;
 import com.fitgen.rest.util.JwtUtil;
@@ -27,10 +28,41 @@ public class WorkoutPlanController {
     private WorkoutPlanRepository workoutPlanRepository;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private GPTService gptService;
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @GetMapping("/suggested-plan")
+    public ResponseEntity<WorkoutPlan> fetchSuggestedPlan(@RequestHeader("Authorization") String authHeader) throws Exception {
+        String jwt = authHeader.substring(7);
+        String userIdString = jwtUtil.extractUserId(jwt);
+
+        User user = userRepository.findById(userIdString).orElseThrow(() -> new Exception("User not found"));
+
+        String suggestedPlanId = gptService.getSuggestedPlan(userIdString, user);
+
+        Optional<WorkoutPlan> optionalSuggestedPlan = workoutPlanRepository.findById(suggestedPlanId);
+        return optionalSuggestedPlan.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @PatchMapping("/{id}/incrementLikes")
+    public ResponseEntity<String> incrementLikes(@PathVariable String id) {
+        Optional<WorkoutPlan> optionalWorkoutPlan = workoutPlanRepository.findById(id);
+
+        if(optionalWorkoutPlan.isPresent()) {
+            WorkoutPlan workoutPlan = optionalWorkoutPlan.get();
+            workoutPlan.setLikes((workoutPlan.getLikes() == 0 ? 1 : workoutPlan.getLikes() + 1));
+            workoutPlanRepository.save(workoutPlan);
+
+            return ResponseEntity.ok("Likes incremented for plan ID: " + id);
+        } else {
+            throw new IllegalArgumentException("Workout Plan ID: " + id + " not found");
+        }
+    }
 
     @GetMapping
     public ResponseEntity<List<String>> getWorkoutPlansForUser(@RequestHeader("Authorization") String authHeader) {

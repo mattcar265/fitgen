@@ -19,6 +19,6 @@ public class WorkoutPlan {
     private String notes;
     private Date creationDate;
     private List<Exercise> exercises;
-
     private ObjectId userId;
+    private int likes;
 }

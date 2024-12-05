@@ -1,6 +1,6 @@
 import BottomNav from "@/components/BottomNav";
 import colors from "@/constants/colors";
-// import env from "@/env/env";
+import env from "@/env/env";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
@@ -14,6 +14,7 @@ import {
     Image,
 } from "react-native";
 import profileIcon from "@/assets/images/profile.png";
+import thumbIcon from "@/assets/images/thumb.png";
 
 const ViewPlan = ({ toggleModal }: { toggleModal: () => void }) => {
     const { workoutPlanId } = useLocalSearchParams();
@@ -53,7 +54,7 @@ const ViewPlan = ({ toggleModal }: { toggleModal: () => void }) => {
             const token = await AsyncStorage.getItem("jwtToken");
 
             const response = await fetch(
-                `http://localhost:8080/workout-plans/${workoutPlanId}`,
+                `http://$(env.BACKEND_IP}:8080/workout-plans/${workoutPlanId}`,
                 {
                     method: "PUT",
                     headers: {
@@ -79,7 +80,10 @@ const ViewPlan = ({ toggleModal }: { toggleModal: () => void }) => {
             console.log("from view page:" + workoutPlanId);
             try {
                 const response = await fetch(
-                    "http://localhost:8080/workout-plans/" + workoutPlanId
+                    "http://" +
+                        env.BACKEND_IP +
+                        ":8080/workout-plans/" +
+                        workoutPlanId
                 );
                 if (response.ok) {
                     const data = await response.json();
@@ -113,6 +117,22 @@ const ViewPlan = ({ toggleModal }: { toggleModal: () => void }) => {
         return <Text>No workout plan found</Text>;
     }
 
+    const handleLike = async () => {
+        try {
+            const response = await fetch(
+                `http://${env.BACKEND_IP}:8080/workout-plans/${workoutPlanId}/incrementLikes`,
+                { method: "PATCH" }
+            );
+            if (response.ok) {
+                console.log("Added like to " + workoutPlanId);
+            } else {
+                console.error("Failed to add like");
+            }
+        } catch (error) {
+            console.error("Error adding like to workout plan: ", error);
+        }
+    };
+
     return (
         <View style={styles.container}>
             <View style={styles.topNav}>
@@ -128,6 +148,15 @@ const ViewPlan = ({ toggleModal }: { toggleModal: () => void }) => {
 
                 <View style={styles.notesContainer}>
                     <Text style={styles.notes}>{workoutPlan.notes}</Text>
+                </View>
+
+                <View>
+                    <TouchableOpacity onPress={() => handleLike()}>
+                        <Image
+                            style={styles.thumbContainer}
+                            source={thumbIcon}
+                        />
+                    </TouchableOpacity>
                 </View>
 
                 <View>
@@ -236,6 +265,11 @@ const ViewPlan = ({ toggleModal }: { toggleModal: () => void }) => {
 };
 
 const styles = StyleSheet.create({
+    thumbContainer: {
+        marginVertical: 20,
+        height: 20,
+        width: 20,
+    },
     workoutsContainer: {
         overflow: "scroll",
     },

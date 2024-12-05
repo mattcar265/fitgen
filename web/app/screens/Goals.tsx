@@ -12,7 +12,7 @@ import React, { useEffect, useState } from "react";
 import WorkoutPlanForm from "@/components/WorkoutPlanForm";
 import BottomNav from "@/components/BottomNav";
 import { Controller, useForm } from "react-hook-form";
-// import env from "@/env/env";
+import env from "@/env/env";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Picker } from "@react-native-picker/picker";
@@ -48,7 +48,8 @@ export default function Goals() {
         }
         console.log(data);
 
-        const backend_url = "http://localhost:8080/user/fitness-goals";
+        const backend_url =
+            "http://" + env.BACKEND_IP + ":8080/user/fitness-goals";
         console.log(backend_url);
 
         const response = await fetch(backend_url, {
