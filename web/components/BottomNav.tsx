@@ -14,25 +14,29 @@ const BottomNav = ({ toggleModal }: { toggleModal: () => void }) => {
                 style={styles.bottomNavItem}
                 onPress={() => router.push("/screens/Dashboard")}
             >
-                <Image source={homeIcon} />
+                <Image style={styles.icon} source={homeIcon} />
             </TouchableOpacity>
             <TouchableOpacity
                 style={styles.bottomNavItem}
                 onPress={toggleModal}
             >
-                <Image source={plusIcon} />
+                <Image style={styles.icon} source={plusIcon} />
             </TouchableOpacity>
             <TouchableOpacity
                 style={styles.bottomNavItem}
                 onPress={() => router.push("/screens/Goals")}
             >
-                <Image source={trendUpIcon} />
+                <Image style={styles.icon} source={trendUpIcon} />
             </TouchableOpacity>
         </View>
     );
 };
 
 const styles = StyleSheet.create({
+    icon: {
+        height: 20,
+        width: 20,
+    },
     bottomNav: {
         width: "100%",
         height: 60,

@@ -14,6 +14,7 @@ import {
     Image,
 } from "react-native";
 import profileIcon from "@/assets/images/profile.png";
+import thumbIcon from "@/assets/images/thumb.png";
 
 const ViewPlan = ({ toggleModal }: { toggleModal: () => void }) => {
     const { workoutPlanId } = useLocalSearchParams();
@@ -151,7 +152,10 @@ const ViewPlan = ({ toggleModal }: { toggleModal: () => void }) => {
 
                 <View>
                     <TouchableOpacity onPress={() => handleLike()}>
-                        <Text>Like this plan</Text>
+                        <Image
+                            style={styles.thumbContainer}
+                            source={thumbIcon}
+                        />
                     </TouchableOpacity>
                 </View>
 
@@ -261,6 +265,11 @@ const ViewPlan = ({ toggleModal }: { toggleModal: () => void }) => {
 };
 
 const styles = StyleSheet.create({
+    thumbContainer: {
+        marginVertical: 20,
+        height: 20,
+        width: 20,
+    },
     workoutsContainer: {
         overflow: "scroll",
     },
