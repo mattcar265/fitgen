@@ -1,7 +1,10 @@
 package com.fitgen.rest.controller;
 
+import com.fitgen.rest.exception.GPTKeyException;
+import com.fitgen.rest.model.User;
 import com.fitgen.rest.model.WorkoutPlan;
 import com.fitgen.rest.model.WorkoutPlanForm;
+import com.fitgen.rest.repository.UserRepository;
 import com.fitgen.rest.repository.WorkoutPlanRepository;
 import com.fitgen.rest.service.GPTService;
 import com.fitgen.rest.util.JwtUtil;
@@ -33,6 +36,12 @@ public class WorkoutPlanControllerTest {
 
     @Mock
     WorkoutPlanRepository workoutPlanRepository;
+
+    @Mock
+    UserRepository userRepository;
+
+    @Mock
+    GPTService gptService;
 
     @Mock
     JwtUtil jwtUtil;
@@ -148,5 +157,44 @@ public class WorkoutPlanControllerTest {
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         assertEquals("Workout plan not found", response.getBody());
 
+    }
+
+    @Test
+    void fetchSuggestedPlanTest() throws Exception {
+        String authHeader = "Bearer sampleJWT";
+        String jwt = "sampleJWT";
+        String userIdString = "123456789123456789123456";
+        String suggestedPlanId = "suggestedPlanId";
+
+        User mockUser = new User();
+        mockUser.setUserId(userIdString);
+
+        WorkoutPlan mockWorkoutPlan = new WorkoutPlan();
+        mockWorkoutPlan.setPlanId(suggestedPlanId);
+        mockWorkoutPlan.setPlanName("Bench Press Day for Chest Goals");
+        mockWorkoutPlan.setNotes("Lock shoulder back throughout each press workout");
+
+        when(jwtUtil.extractUserId(jwt)).thenReturn(userIdString);
+        when(userRepository.findById(userIdString)).thenReturn(Optional.of(mockUser));
+        when(gptService.getSuggestedPlan(userIdString, mockUser)).thenReturn(suggestedPlanId);
+        when(workoutPlanRepository.findById(suggestedPlanId)).thenReturn(Optional.of(mockWorkoutPlan));
+
+        ResponseEntity<WorkoutPlan> response = workoutPlanController.fetchSuggestedPlan(authHeader);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Test
+    void fetchSuggestedPlanNonExistentUserTest() {
+        String authHeader = "Bearer sampleJWT";
+        String jwt = "sampleJWT";
+        String userIdString = "123456789123456789123456";
+
+        when(jwtUtil.extractUserId(jwt)).thenReturn(userIdString);
+        when(userRepository.findById(userIdString)).thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(Exception.class, () -> {
+            workoutPlanController.fetchSuggestedPlan(authHeader);
+        });
     }
 }
